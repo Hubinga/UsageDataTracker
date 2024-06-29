@@ -3,23 +3,5 @@
 
 <PageTitle>Home</PageTitle>
 
-<AuthorizeComponent
-	UserAction="@userAction"
-	OnUserActionChanged="ToggleUserActionState">
+<AuthorizeComponent>
 </AuthorizeComponent>
-
-@code{
-	private UserActions userAction = UserActions.Login;
-
-	private void ToggleUserActionState()
-	{
-		if(userAction == UserActions.Login)
-		{
-			userAction = UserActions.Register;
-		}
-		else
-		{
-			userAction = UserActions.Login;
-		}
-	}
-}

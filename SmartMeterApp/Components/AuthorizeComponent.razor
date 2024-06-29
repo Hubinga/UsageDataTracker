@@ -1,6 +1,10 @@
-﻿@using SmartMeterApi.Models
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Threading.Tasks
+@inject HttpClient Http
+@inject NavigationManager Navigation
 
-@if(UserAction == UserActions.Login)
+@if(userAction == UserActions.Login)
 {
     <h3>Sign In to Smart Meter Gateway</h3>
 
@@ -25,7 +29,7 @@
     <div style="margin-top: 15px;">
         <p>
             Don’t have an account.
-            <div class="login-register-user-action" @onclick="@(() => UserActionButtonOnClick())">Register now</div>
+            <div class="login-register-user-action" @onclick="@(() => ToggleUserActionState())">Register now</div>
         </p>
     </div>
 }
@@ -53,7 +57,7 @@ else
         <div style="margin-top: 15px;">
             <p>
                 Already have an account?
-                <div class="login-register-user-action" @onclick="@(() => UserActionButtonOnClick())">Login now</div>
+                <div class="login-register-user-action" @onclick="@(() => ToggleUserActionState())">Login now</div>
             </p>
         </div>
     </EditForm>
