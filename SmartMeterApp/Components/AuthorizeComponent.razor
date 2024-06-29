@@ -58,27 +58,3 @@ else
         </div>
     </EditForm>
 }
-
-@code {
-    [Parameter] public UserActions UserAction { get; set; }
-    [Parameter] public EventCallback OnUserActionChanged { get; set; }
-
-    private LoginModel loginModel = new LoginModel();
-    private RegisterModel registerModel = new RegisterModel();
-
-    private void HandleValidSubmitRegister()
-    {
-
-    }
-
-    private void HandleValidSubmitLogin()
-    {
-
-    }
-
-    private async Task UserActionButtonOnClick()
-    {
-        await OnUserActionChanged.InvokeAsync();
-        StateHasChanged();
-    }
-}
