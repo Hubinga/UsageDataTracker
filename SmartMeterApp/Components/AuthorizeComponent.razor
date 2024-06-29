@@ -1,0 +1,84 @@
+﻿@using SmartMeterApi.Models
+
+@if(UserAction == UserActions.Login)
+{
+    <h3>Sign In to Smart Meter Gateway</h3>
+
+    <EditForm Model="@loginModel" OnValidSubmit="HandleValidSubmitLogin">
+        <DataAnnotationsValidator />
+
+        <div class="form-group login-register-form-group">
+            <label for="email">Email:</label>
+            <InputText id="email" @bind-Value="loginModel.Email" class="form-control" />
+            <ValidationMessage For="@(() => loginModel.Email)" />
+        </div>
+
+        <div class="form-group login-register-form-group">
+            <label for="password">Passwort:</label>
+            <InputText id="password" @bind-Value="loginModel.Password" type="password" class="form-control" />
+            <ValidationMessage For="@(() => loginModel.Password)" />
+        </div>
+
+        <button type="submit" class="btn-primary btn btn-block login-register-btn">Login</button>
+    </EditForm>
+
+    <div style="margin-top: 15px;">
+        <p>
+            Don’t have an account.
+            <div class="login-register-user-action" @onclick="@(() => UserActionButtonOnClick())">Register now</div>
+        </p>
+    </div>
+}
+else
+{
+    <h3>Register for Smart Meter Gateway</h3>
+
+    <EditForm Model="@registerModel" OnValidSubmit="HandleValidSubmitRegister">
+        <DataAnnotationsValidator />
+
+        <div class="form-group login-register-form-group">
+            <label for="email">Email:</label>
+            <InputText id="email" @bind-Value="registerModel.Email" class="form-control" />
+            <ValidationMessage For="@(() => registerModel.Email)" />
+        </div>
+
+        <div class="form-group login-register-form-group">
+            <label for="password">Passwort:</label>
+            <InputText id="password" @bind-Value="registerModel.Password" type="password" class="form-control" />
+            <ValidationMessage For="@(() => registerModel.Password)" />
+        </div>
+
+        <button type="submit" class="btn-primary btn btn-block login-register-btn">Register</button>
+
+        <div style="margin-top: 15px;">
+            <p>
+                Already have an account?
+                <div class="login-register-user-action" @onclick="@(() => UserActionButtonOnClick())">Login now</div>
+            </p>
+        </div>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public UserActions UserAction { get; set; }
+    [Parameter] public EventCallback OnUserActionChanged { get; set; }
+
+    private LoginModel loginModel = new LoginModel();
+    private RegisterModel registerModel = new RegisterModel();
+
+    private void HandleValidSubmitRegister()
+    {
+
+    }
+
+    private void HandleValidSubmitLogin()
+    {
+
+    }
+
+    private async Task UserActionButtonOnClick()
+    {
+        await OnUserActionChanged.InvokeAsync();
+        StateHasChanged();
+    }
+}

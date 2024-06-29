@@ -1,0 +1,19 @@
+﻿.login-register-btn {
+    background: #098842;
+    color: white;
+    border: 0 solid transparent;
+    border-radius: 30px;
+    width: 320px;
+    padding: 4px 0px;
+}
+
+.login-register-form-group {
+    margin: 0px 0px 15px;
+    width: 320px;
+}
+
+.login-register-user-action {
+    color: #098842;
+    text-decoration: underline;
+    cursor: pointer;
+}

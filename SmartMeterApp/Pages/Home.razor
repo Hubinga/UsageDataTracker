@@ -1,7 +1,25 @@
 ﻿@page "/"
+@using SmartMeterApp.Components
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<AuthorizeComponent
+	UserAction="@userAction"
+	OnUserActionChanged="ToggleUserActionState">
+</AuthorizeComponent>
 
-Welcome to your new app.
+@code{
+	private UserActions userAction = UserActions.Login;
+
+	private void ToggleUserActionState()
+	{
+		if(userAction == UserActions.Login)
+		{
+			userAction = UserActions.Register;
+		}
+		else
+		{
+			userAction = UserActions.Login;
+		}
+	}
+}
