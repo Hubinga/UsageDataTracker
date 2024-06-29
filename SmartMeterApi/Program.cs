@@ -40,6 +40,18 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+
+// Füge CORS-Dienste hinzu
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder => builder
+            .WithOrigins("https://localhost:7116") // url of allowed applications
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+});
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -52,6 +64,10 @@ else
 	app.UseExceptionHandler("/Home/Error");
 	app.UseHsts();
 }
+
+// Konfiguriere die CORS-Policy in der Anwendung
+app.UseCors("AllowSpecificOrigin");
+
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
