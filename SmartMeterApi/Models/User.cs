@@ -10,7 +10,13 @@ namespace SmartMeterApi.Models
 		[Key]
 		public int Id { get; set; }
 
-		[Required]
+        [Required]
+        public string Firstname { get; set; }
+
+        [Required]
+        public string Lastname { get; set; }
+
+        [Required]
 		public string Email { get; set; }
 
 		[Required]

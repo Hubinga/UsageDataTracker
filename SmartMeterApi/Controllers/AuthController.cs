@@ -66,6 +66,8 @@ namespace SmartMeterApi.Controllers
 			// Create new user object
 			var user = new User
 			{
+				Firstname = registerModel.Firstname,
+				Lastname = registerModel.Lastname,
 				Email = registerModel.Email,
 				PasswordHash = passwordHash,
 				PasswordSalt = passwordSalt,

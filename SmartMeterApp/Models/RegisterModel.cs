@@ -4,6 +4,12 @@ namespace SmartMeterApi.Models
 {
     public class RegisterModel
     {
+        [Required(ErrorMessage = "Firstname is required.")]
+        public string Firstname { get; set; }
+
+        [Required(ErrorMessage = "Lastname is required.")]
+        public string Lastname { get; set; }
+
         [Required(ErrorMessage = "Email address is required.")]
         [EmailAddress(ErrorMessage = "Invalid email address.")]
         public string Email { get; set; }
