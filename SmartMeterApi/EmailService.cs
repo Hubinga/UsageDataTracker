@@ -1,10 +1,8 @@
 ﻿namespace SmartMeterApi
 {
-    using MailKit.Net.Smtp;
     using MailKit.Security;
     using MimeKit;
     using System;
-    using System.Net.Mail;
 
     public class EmailService
     {

@@ -16,42 +16,17 @@ namespace SmartMeterApi.Controllers
 	{
 		private readonly IConfiguration _config;
 		private readonly SmartMeterContext _context;
+		private EmailService _emailService;
 
 		public AuthController(IConfiguration config, SmartMeterContext context)
 		{
 			_config = config;
 			_context = context;
+			_emailService = new EmailService();
 		}
 
-		[HttpPost("login")]
-		public async Task<IActionResult> Login([FromBody] LoginModel loginModel)
-		{
-			// 1. Find user by email address
-			User user = await _context.Users.SingleOrDefaultAsync(u => u.Email == loginModel.Email);
-
-			// 2. Check if user exists
-			if (user == null)
-			{
-				// User not found
-				return NotFound("User not found.");
-			}
-
-			// 3. Verify password using HashHelper
-			if (!HashHelper.VerifyPasswordHash(loginModel.Password, user.PasswordSalt, user.PasswordHash))
-			{
-				// Password is incorrect
-				return Unauthorized("Invalid login credentials.");
-			}
-
-			// Login successful
-			// Generate and return JWT token
-			var token = GenerateJwtToken(user);
-
-			return Ok(new { Token = token });
-		}
-
-        [HttpPost("login2")]
-        public async Task<IActionResult> Login2([FromBody] LoginModel loginModel)
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginModel loginModel)
         {
             // 1. Find user by email address
             User user = await _context.Users.SingleOrDefaultAsync(u => u.Email == loginModel.Email);
@@ -71,8 +46,9 @@ namespace SmartMeterApi.Controllers
             }
 
             // Generate OTP and save it in user's record
-            string otp = GenerateAndSaveOTP(user); // Implement this method to generate OTP and save it
-			SendOtpAsEmail(otp);
+            string otp = GenerateAndSaveOTP(user);
+			// Send otp as email
+			_emailService.SendOtpAsEmail(otp, user.Email);
 
             // Return OK response with the OTP information (for frontend to handle)
             return Ok(new { OTPSent = true, Email = user.Email });
@@ -92,11 +68,6 @@ namespace SmartMeterApi.Controllers
 
             return otp; 
         }
-
-		private void SendOtpAsEmail(string otp)
-		{
-
-		}
 
         // Method to generate a random OTP
         private string GenerateRandomOTP()
@@ -152,16 +123,18 @@ namespace SmartMeterApi.Controllers
 			byte[] passwordHash, passwordSalt;
 			HashHelper.CreatePasswordHash(registerModel.Password, out passwordHash, out passwordSalt);
 
-			// Create new user object
-			var user = new User
-			{
-				Firstname = registerModel.Firstname,
-				Lastname = registerModel.Lastname,
-				Email = registerModel.Email,
-				PasswordHash = passwordHash,
-				PasswordSalt = passwordSalt,
-				Role = "User" // Set the default role for new users
-			};
+            // Create new user object
+            var user = new User
+            {
+                Firstname = registerModel.Firstname,
+                Lastname = registerModel.Lastname,
+                Email = registerModel.Email,
+                PasswordHash = passwordHash,
+                PasswordSalt = passwordSalt,
+                Role = "User", // Set the default role for new users
+                OtpCode = "",
+                OtpExpiration = null
+            };
 
 			// Add user to database
 			_context.Users.Add(user);
