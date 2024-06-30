@@ -27,5 +27,8 @@ namespace SmartMeterApi.Models
 
 		[Required]
 		public string Role { get; set; }
-	}
+
+        public string OtpCode { get; set; } // New field for OTP
+        public DateTime? OtpExpiration { get; set; }
+    }
 }

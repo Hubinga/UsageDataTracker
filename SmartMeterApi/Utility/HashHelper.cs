@@ -37,9 +37,9 @@ namespace SmartMeterApi.Utility
 				// Compute hash for the entered password using the stored salt
 				var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
 
-				// Compare computed hash with stored hash
-				return storedHash == computedHash;
-			}
+                // Compare computed hash with stored hash
+                return storedHash.SequenceEqual(computedHash);
+            }
 		}
 	}
 

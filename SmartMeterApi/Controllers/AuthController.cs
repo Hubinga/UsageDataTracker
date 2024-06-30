@@ -33,14 +33,14 @@ namespace SmartMeterApi.Controllers
 			if (user == null)
 			{
 				// User not found
-				return NotFound("Benutzer nicht gefunden.");
+				return NotFound("User not found.");
 			}
 
 			// 3. Verify password using HashHelper
 			if (!HashHelper.VerifyPasswordHash(loginModel.Password, user.PasswordSalt, user.PasswordHash))
 			{
 				// Password is incorrect
-				return Unauthorized("Ungültige Anmeldeinformationen.");
+				return Unauthorized("Invalid login credentials.");
 			}
 
 			// Login successful
@@ -50,13 +50,102 @@ namespace SmartMeterApi.Controllers
 			return Ok(new { Token = token });
 		}
 
-		[HttpPost("register")]
+        [HttpPost("login2")]
+        public async Task<IActionResult> Login2([FromBody] LoginModel loginModel)
+        {
+            // 1. Find user by email address
+            User user = await _context.Users.SingleOrDefaultAsync(u => u.Email == loginModel.Email);
+
+            // 2. Check if user exists
+            if (user == null)
+            {
+                // User not found
+                return NotFound("User not found.");
+            }
+
+            // 3. Verify password using HashHelper
+            if (!HashHelper.VerifyPasswordHash(loginModel.Password, user.PasswordSalt, user.PasswordHash))
+            {
+                // Password is incorrect
+                return Unauthorized("Invalid login credentials.");
+            }
+
+            // Generate OTP and save it in user's record
+            string otp = GenerateAndSaveOTP(user); // Implement this method to generate OTP and save it
+			SendOtpAsEmail(otp);
+
+            // Return OK response with the OTP information (for frontend to handle)
+            return Ok(new { OTPSent = true, Email = user.Email });
+        }
+
+        // Method to generate OTP and save it in user's record
+        private string GenerateAndSaveOTP(User user)
+        {
+            // Generate OTP
+            var otp = GenerateRandomOTP();
+
+            // Save OTP in user's record
+            user.OtpCode = otp;
+            user.OtpExpiration = DateTime.UtcNow.AddMinutes(5); //OTP expires in 5 minutes
+
+            _context.SaveChanges(); // Save changes to database
+
+            return otp; 
+        }
+
+		private void SendOtpAsEmail(string otp)
+		{
+
+		}
+
+        // Method to generate a random OTP
+        private string GenerateRandomOTP()
+        {
+            // Generate a random 6-digit OTP
+            Random random = new Random();
+            int otpValue = random.Next(100000, 999999);
+            return otpValue.ToString();
+        }
+
+        [HttpPost("verifyotp")]
+        public async Task<IActionResult> VerifyOTP([FromBody] VerifyOtpModel model)
+        {
+            // Find user by email address
+            User user = await _context.Users.SingleOrDefaultAsync(u => u.Email == model.Email);
+
+            if (user == null)
+            {
+                // User not found
+                return NotFound("User not found.");
+            }
+
+            // Check if OTP matches and is not expired
+            if (user.OtpCode != model.OTPCode || user.OtpExpiration < DateTime.UtcNow)
+            {
+                // Invalid OTP or expired
+                return BadRequest("Invalid OTP or OTP has expired.");
+            }
+
+            // Clear OTP fields after successful verification
+            user.OtpCode = null;
+            user.OtpExpiration = null;
+
+            _context.SaveChanges(); // Save changes to database
+
+            // Generate and return JWT token
+            var token = GenerateJwtToken(user);
+
+            return Ok(new { Token = token });
+        }
+
+
+        [HttpPost("register")]
 		public async Task<IActionResult> Register([FromBody] RegisterModel registerModel)
 		{
 			// Check if user already exists
 			if (await UserExists(registerModel.Email))
 			{
-				return Conflict("Benutzer existiert bereits.");
+				return Conflict("User already exists.");
 			}
 
 			// Create password hash and salt
