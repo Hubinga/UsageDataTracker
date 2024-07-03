@@ -1,8 +1,44 @@
-﻿@inherits LayoutComponentBase
+﻿@using SmartMeterApp.Components
+@using SmartMeterApp.Models
+@using SmartMeterApp.Services
+@using System.Collections.Specialized
+@inject ToastService ToastService;
+@implements IDisposable;
+
+@inherits LayoutComponentBase
 <div class="page">
     <main>
-        <article class="content px-4">
+        <article>
             @Body
         </article>
+		
+
+		<div style="display: flex; flex-direction: column; position: absolute; top: 0px; right: 0px;">
+			@foreach (ToastObject toast in ToastService.ToastObjects)
+			{	
+				<ToastComponent ToastObject="@toast" 
+					ToastOnClose="@(() => ToastService.RemoveToast(toast))">
+
+				</ToastComponent>
+			}
+		</div>
+
     </main>
 </div>
+
+@code {
+	protected override void OnInitialized()
+	{
+		ToastService.ToastObjects.CollectionChanged += ToastObjects_CollectionChanged;
+	}
+
+	private void ToastObjects_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+	{
+		StateHasChanged();
+	}
+
+	public void Dispose()
+	{
+		ToastService.ToastObjects.CollectionChanged -= ToastObjects_CollectionChanged;
+	}
+}

@@ -8,8 +8,8 @@
     {
         private readonly string _smtpServer = "smtp-mail.outlook.com"; 
         private readonly int _smtpPort = 587; 
-        private readonly string _smtpUsername = "";
-        private readonly string _smtpPassword = "";
+        private readonly string _smtpUsername = "andi.development@outlook.de";
+        private readonly string _smtpPassword = "andidevelopment123!";
 
         public void SendOtpAsEmail(string otp, string userEmail)
         {

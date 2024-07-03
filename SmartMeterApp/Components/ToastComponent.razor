@@ -1,0 +1,39 @@
+﻿@using SmartMeterApp.Models
+@using SmartMeterApp.Utility
+
+<div class="toast-container p-0.1">
+    <div id="liveToast" class="my-toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+
+            @if(ToastObject.ToastType == ToastType.Info)
+            {
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="blue" class="bi bi-exclamation-circle-fill" viewBox="0 0 16 16">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4m.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2" />
+                </svg>
+            }
+            else if(ToastObject.ToastType == ToastType.Info)
+            {
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="yellow" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2" />
+                </svg>
+            }
+            else
+            {
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="red" class="bi bi-exclamation-triangle-fill" viewBox="0 0 16 16">
+                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5m.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2" />
+                </svg>
+            }
+
+            <strong class="me-auto" style="margin-left: 1rem;">@(EnumExtensions.GetDisplayName(ToastObject.ToastType))</strong>
+            <button type="button" @onclick="@(async () => await ToastOnClose.InvokeAsync())" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            @ToastObject.Message
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter][EditorRequired] public ToastObject ToastObject { get; set; }
+    [Parameter] public EventCallback ToastOnClose { get; set; }
+}
