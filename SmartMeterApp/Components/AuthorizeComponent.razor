@@ -1,9 +1,12 @@
 ﻿@using System.Net.Http
 @using System.Net.Http.Json
 @using System.Threading.Tasks
+@using Microsoft.JSInterop;
+@using SmartMeterApp.Services
 @inject HttpClient HttpClient
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@inject ToastService ToastService
 
 <div class="login-register-container">
     @if(userAction == UserActions.Login)
@@ -25,7 +28,18 @@
                 <ValidationMessage For="@(() => loginModel.Password)" />
             </div>
 
-            <button type="submit" class="btn-primary btn btn-block login-register-btn">Login</button>
+            <button type="submit" disabled="@isVerifying" class="btn-primary btn btn-block login-register-btn">
+                @if (isVerifying)
+                {
+                    <div class="spinner-border" role="status" style="height: 1rem; width: 1rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                }
+                else
+                {
+                    <span>Login</span>
+                } 
+            </button>
         </EditForm>
 
         <div style="margin-top: 15px;">
@@ -76,7 +90,18 @@
                 }
             </div>
 
-            <button type="submit" class="btn-primary btn btn-block login-register-btn">Register</button>
+            <button type="submit" disabled="@isVerifying" class="btn-primary btn btn-block login-register-btn">
+                @if (isVerifying)
+                {
+                    <div class="spinner-border m-5" role="status" style="height: 1rem; width: 1rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                }
+                else
+                {
+                    <span>Register</span>
+                }
+            </button>
 
             <div style="margin-top: 15px;">
                 <p>
@@ -86,21 +111,44 @@
             </div>
         </EditForm>
     }
-</div>
-
-<!-- OTP Modal -->
-<div class="modal fade" id="otpModal" tabindex="-1" role="dialog" aria-labelledby="otpModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="otpModalLabel">Enter OTP</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-               
+    <!-- OTP Modal -->
+    <div id="otpModal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">OTP Verification</h5>
+                    <button type="button" disabled="@isVerifying" class="close" aria-label="Close" @onclick="HideOtpModal">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <EditForm Model="@verifyOtpModel" OnValidSubmit="HandleOTPVerification">
+                    <DataAnnotationsValidator />
+                    <div class="modal-body">
+                        <p>Please enter the OTP sent to your email.</p>
+                        <div class="form-group">
+                            <InputText id="otp" @bind-Value="verifyOtpModel.Otp" class="form-control" placeholder="Enter OTP" />
+                            <ValidationMessage For="@(() => verifyOtpModel.Otp)" />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" disabled="@isVerifying" class="btn btn-primary">
+                            @if (isVerifying)
+                            {
+                                <div class="spinner-border" role="status" style="height: 1rem; width: 1rem;">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <span>Verify OTP</span>
+                            }
+                        </button>
+                        <button type="button" disabled="@isVerifying" class="btn btn-secondary" @onclick="HideOtpModal">Close</button>
+                    </div>
+                </EditForm>
             </div>
         </div>
     </div>
+
+    <button @onclick="@(() => ToastService.AddToast())">Add Toast</button>
 </div>

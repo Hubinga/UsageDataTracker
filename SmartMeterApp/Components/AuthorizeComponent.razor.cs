@@ -12,16 +12,19 @@ namespace SmartMeterApp.Components
 
         private LoginModel loginModel = new LoginModel();
         private RegisterModel registerModel = new RegisterModel();
+        private VerifyOtpModel verifyOtpModel = new VerifyOtpModel();
 
         private string repeatedPassword;
         private bool showRepeatedPasswordError = false;
 
-        private bool showOtpInputDialog = false;
+        private bool isVerifying = false;
 
         private async Task HandleValidSubmitLogin()
         {
             try
             {
+                isVerifying = true;
+
                 // Send the login request to the API
                 var response = await HttpClient.PostAsJsonAsync("api/auth/login", loginModel);
 
@@ -38,10 +41,8 @@ namespace SmartMeterApp.Components
                         var userEmail = responseObject["email"].ToString();
                         Console.WriteLine($"OTP was sent to {userEmail}");
 
-                        // Proceed with OTP validation logic or UI update
-                        // For example, show an OTP input field or message in the UI
-                        showOtpInputDialog = true;
-                        await JS.InvokeVoidAsync("ModalInterop.show", "otpModal");
+                        // show otp input modal
+                        await JS.InvokeVoidAsync("showModal", "otpModal");
                     }
                     else
                     {
@@ -58,69 +59,80 @@ namespace SmartMeterApp.Components
             }
             catch (Exception ex)
             {
-                // Handle other exceptions (e.g., network errors, etc.)
                 Console.WriteLine($"Failed to login: {ex.Message}");
+            }
+            finally
+            {
+                isVerifying = false;
             }
         }
 
-        private async Task HandleOTPVerification(string otpCode)
+        private async Task HandleOTPVerification()
         {
-            VerifyOtpModel verifyOtpModel = new VerifyOtpModel() {Email = loginModel.Email, OTPCode = otpCode };
-            // Hier wird die API-Anfrage zur OTP-Code-Verifikation gemacht
-            var response = await HttpClient.PostAsJsonAsync("api/auth/", verifyOtpModel);
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                // Read the token from the response
-                var result = await response.Content.ReadFromJsonAsync<AuthResponse>();
+                isVerifying = true;
+                verifyOtpModel.Email = loginModel.Email;
+                HttpResponseMessage response = await HttpClient.PostAsJsonAsync("api/auth/verifyotp", verifyOtpModel);
 
-                if (true)
+                if (response.IsSuccessStatusCode)
                 {
-                    // Erfolgreiche Authentifizierung, erhalte und speichere den JWT-Token
-                    var token = result.Token;
-                    StoreToken(token);
+                    AuthResponse? result = await response.Content.ReadFromJsonAsync<AuthResponse>();
+                    StoreToken(result.Token);
+                    HideOtpModal();
                     Navigation.NavigateTo("/");
                 }
                 else
                 {
-                    // Fehler: OTP-Code ungültig
-                    Console.WriteLine("Ungültiger OTP-Code. Bitte versuche es erneut.");
+                    string errorMessage = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"OTP verification failed: {errorMessage}");
                 }
             }
-            else
+            catch (Exception ex)
             {
-                // Fehler: API-Anfrage fehlgeschlagen
-                Console.WriteLine("Serverfehler. Bitte versuche es später erneut.");
+                Console.WriteLine($"Failed to verify otp: {ex.Message}");
+            }
+            finally
+            {
+                isVerifying = false;
             }
         }
 
-
-
         private async Task HandleValidSubmitRegister()
         {
-            // Validate the repeated password
-            if (registerModel.Password != repeatedPassword)
+            try
             {
-                showRepeatedPasswordError = true;
-                return;
+                // Validate the repeated password
+                if (registerModel.Password != repeatedPassword)
+                {
+                    showRepeatedPasswordError = true;
+                    return;
+                }
+
+                showRepeatedPasswordError = false;
+                // Send the register request to the API
+                var response = await HttpClient.PostAsJsonAsync("api/auth/register", registerModel);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Redirect to the login page after successful registration
+                    userAction = UserActions.Login;
+                }
+                else
+                {
+                    // Handle registration failure (e.g., show an error message)
+                    var errorMessage = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Registration failed: {errorMessage}");
+                }
             }
-
-            showRepeatedPasswordError = false;
-            // Send the register request to the API
-            var response = await HttpClient.PostAsJsonAsync("api/auth/register", registerModel);
-
-            if (response.IsSuccessStatusCode)
+            catch (Exception ex)
             {
-                // Redirect to the login page after successful registration
-                userAction = UserActions.Login;
+                Console.WriteLine($"Failed to register account: {ex.Message}");
             }
-            else
+            finally
             {
-                // Handle registration failure (e.g., show an error message)
-                var errorMessage = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Registration failed: {errorMessage}");
+                isVerifying = false; 
             }
-
         }
 
         private void StoreToken(string token)
@@ -146,6 +158,11 @@ namespace SmartMeterApp.Components
             {
                 userAction = UserActions.Login;
             }
+        }
+
+        private void HideOtpModal()
+        {
+            JS.InvokeVoidAsync("hideModal", "otpModal");
         }
     }
 }
