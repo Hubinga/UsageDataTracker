@@ -1,0 +1,67 @@
+﻿@using SmartMeterApp.Models
+
+<div class="chart">
+    <h3 class="chart-title">Monthly Consumption Data in kWh for the Year 2024</h3>
+    <div class="container">
+        @for (int i = 0; i < usageData.Count; i++)
+        {
+            int local = i;
+            <div @onclick="@(async() => await UsageDataClicked(2024, local, usageData[local]))" style="cursor: pointer;">
+                <div class="number" style="height: @(usageData[local])px; max-height: 450px;">@(usageData[local])</div>
+                <div class="month">@months[local]</div>
+            </div>
+        }
+        <div style="position: absolute; left: -40px; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" class="bi bi-caret-left-fill" viewBox="0 0 16 16">
+                <path d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z" />
+            </svg>
+        </div>
+        <div style="position: absolute; right: -40px; cursor: pointer;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
+                <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z" />
+            </svg>
+        </div>
+    </div>
+    
+</div>
+
+<button @onclick="GenerateSampleData">Generate</button>
+
+@code {
+
+    [Parameter] public EventCallback<UsageDataModel> UsageDataOnclick { get; set; }
+
+    private List<int> usageData = new();
+
+    private List<string> months = new List<string>()
+    {
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+    };
+
+
+    private void GenerateSampleData()
+    {
+        Random random = new Random();
+
+        usageData = Enumerable.Range(1, 12).Select(_ => random.Next(100, 450)).ToList();
+
+
+        StateHasChanged();
+    }
+
+    private async Task UsageDataClicked(int year, int monthIdx, int value)
+    {
+        await UsageDataOnclick.InvokeAsync(new UsageDataModel() { Year = year, Month = months[monthIdx], Value = value });
+    }
+}

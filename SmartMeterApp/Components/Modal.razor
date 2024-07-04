@@ -1,0 +1,72 @@
+﻿@using Microsoft.JSInterop;
+@inject IJSRuntime JS
+@inherits OwningComponentBase
+@typeparam TModel
+
+<div id="modal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@Title</h5>
+                <button type="button" disabled="@IsVerifying" class="close" aria-label="Close" @onclick="HideOtpModal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <EditForm Model="@Model" OnValidSubmit="HandleModalSubmit">
+                <DataAnnotationsValidator />
+                <div class="modal-body">
+                    <p>@Text</p>
+                    @Content
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" disabled="@IsVerifying" class="btn btn-primary">
+                        @if (IsVerifying)
+                        {
+                            <div class="spinner-border" role="status" style="height: 1rem; width: 1rem;">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <span>@SubmitButtonText</span>
+                        }
+                    </button>
+                    <button type="button" disabled="@IsVerifying" class="btn btn-secondary" @onclick="HideOtpModal">Close</button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public TModel Model { get; set; }
+
+    [Parameter]
+    public string Title { get; set; }    
+    
+    [Parameter]
+    public string Text { get; set; }
+
+    [Parameter]
+    public string SubmitButtonText { get; set; }
+
+    [Parameter]
+    public bool IsVerifying { get; set; }
+
+    [Parameter]
+    public EventCallback<TModel> OnValidSubmit { get; set; }
+
+    [Parameter]
+    public RenderFragment Content { get; set; }
+
+    private void HandleModalSubmit()
+    {
+        OnValidSubmit.InvokeAsync(Model);
+    }
+
+    private void HideOtpModal()
+    {
+        JS.InvokeVoidAsync("hideModal", "modal");
+    }
+}

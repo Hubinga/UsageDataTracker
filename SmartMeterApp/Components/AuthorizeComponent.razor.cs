@@ -19,6 +19,12 @@ namespace SmartMeterApp.Components
 
         private bool isVerifying = false;
 
+
+        private void LoginDebug()
+        {
+            Navigation.NavigateTo("/Overview");
+        }
+
         private async Task HandleValidSubmitLogin()
         {
             try

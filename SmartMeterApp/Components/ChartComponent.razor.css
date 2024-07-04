@@ -1,0 +1,44 @@
+﻿.chart {
+    width: 100%;
+}
+
+.chart-title {
+    text-align: center;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    width: 80%;
+    height: 500px;
+    border: 2px solid #ced4da;
+    align-items: flex-end;
+    justify-content: space-around;
+    box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15);
+    position: relative;
+}
+
+    .container > div {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 3rem;
+        position: relative;
+    }
+
+.number {
+    width: 100%;
+    background-color: #098842;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.month {
+    position: absolute;
+    bottom: -25px;
+    text-align: center;
+    width: 100%;
+}
