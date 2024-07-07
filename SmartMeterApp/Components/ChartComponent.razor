@@ -1,22 +1,37 @@
 ﻿@using SmartMeterApp.Models
+@using SmartMeterApp.Utility
+@inject IEventAggregator EventAggregator
 
 <div class="chart">
-    <h3 class="chart-title">Monthly Consumption Data in kWh for the Year 2024</h3>
+    <h3 class="chart-title">Monthly Consumption Data in kWh for the Year @(currentYear)</h3>
     <div class="container">
-        @for (int i = 0; i < usageData.Count; i++)
+
+        @for (int i = 0; i < valuesByYear[currentYear].Count; i++)
         {
             int local = i;
-            <div @onclick="@(async() => await UsageDataClicked(2024, local, usageData[local]))" style="cursor: pointer;">
-                <div class="number" style="height: @(usageData[local])px; max-height: 450px;">@(usageData[local])</div>
+            <div @onclick="@(async() => await UsageDataClicked(local, valuesByYear[currentYear][local]))" style="cursor: pointer;">
+                @if (valuesByYear[currentYear][local] <= 0)
+                {
+                    <div class="number" style="height: 100px; max-height: 450px;  background-color: rgb(199 199 199 / 80%);">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-lg" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M4.475 5.458c-.284 0-.514-.237-.47-.517C4.28 3.24 5.576 2 7.825 2c2.25 0 3.767 1.36 3.767 3.215 0 1.344-.665 2.288-1.79 2.973-1.1.659-1.414 1.118-1.414 2.01v.03a.5.5 0 0 1-.5.5h-.77a.5.5 0 0 1-.5-.495l-.003-.2c-.043-1.221.477-2.001 1.645-2.712 1.03-.632 1.397-1.135 1.397-2.028 0-.979-.758-1.698-1.926-1.698-1.009 0-1.71.529-1.938 1.402-.066.254-.278.461-.54.461h-.777ZM7.496 14c.622 0 1.095-.474 1.095-1.09 0-.618-.473-1.092-1.095-1.092-.606 0-1.087.474-1.087 1.091S6.89 14 7.496 14" />
+                        </svg>
+                    </div>
+                }
+                else
+                {
+                    <div class="number" style="height: @(valuesByYear[currentYear][local])px; min-height: 50px; max-height: 450px;">@(valuesByYear[currentYear][local])</div>
+                }
                 <div class="month">@months[local]</div>
             </div>
         }
-        <div style="position: absolute; left: -40px; cursor: pointer;">
+
+        <div style="position: absolute; left: -40px; cursor: pointer;" @onclick="LoadPreviousYearData">
             <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" class="bi bi-caret-left-fill" viewBox="0 0 16 16">
                 <path d="m3.86 8.753 5.482 4.796c.646.566 1.658.106 1.658-.753V3.204a1 1 0 0 0-1.659-.753l-5.48 4.796a1 1 0 0 0 0 1.506z" />
             </svg>
         </div>
-        <div style="position: absolute; right: -40px; cursor: pointer;">
+        <div style="position: absolute; right: -40px; cursor: pointer;" @onclick="LoadNextYearData">
             <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" fill="currentColor" class="bi bi-caret-right-fill" viewBox="0 0 16 16">
                 <path d="m12.14 8.753-5.482 4.796c-.646.566-1.658.106-1.658-.753V3.204a1 1 0 0 1 1.659-.753l5.48 4.796a1 1 0 0 1 0 1.506z" />
             </svg>
@@ -24,44 +39,3 @@
     </div>
     
 </div>
-
-<button @onclick="GenerateSampleData">Generate</button>
-
-@code {
-
-    [Parameter] public EventCallback<UsageDataModel> UsageDataOnclick { get; set; }
-
-    private List<int> usageData = new();
-
-    private List<string> months = new List<string>()
-    {
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December"
-    };
-
-
-    private void GenerateSampleData()
-    {
-        Random random = new Random();
-
-        usageData = Enumerable.Range(1, 12).Select(_ => random.Next(100, 450)).ToList();
-
-
-        StateHasChanged();
-    }
-
-    private async Task UsageDataClicked(int year, int monthIdx, int value)
-    {
-        await UsageDataOnclick.InvokeAsync(new UsageDataModel() { Year = year, Month = months[monthIdx], Value = value });
-    }
-}
