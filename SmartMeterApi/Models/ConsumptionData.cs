@@ -19,15 +19,19 @@ namespace SmartMeterApi.Models
 		[Required]
 		public string UserId { get; set; }
 
-		/// <summary>
-		/// Timestamp indicating when the consumption data was recorded.
-		/// </summary>
-		public DateTime Timestamp { get; set; }
+        /// year.
+        /// </summary>
+        public int Year { get; set; }
 
-		/// <summary>
-		/// The actual consumption value recorded.
-		/// </summary>
-		public double ConsumptionValue { get; set; }
+        /// <summary>
+        /// month
+        /// </summary>
+        public string Month { get; set; }
+
+        /// <summary>
+        /// The actual consumption value recorded.
+        /// </summary>
+        public int ConsumptionValue { get; set; }
 	}
 
 }

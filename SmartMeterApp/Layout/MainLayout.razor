@@ -2,8 +2,12 @@
 @using SmartMeterApp.Models
 @using SmartMeterApp.Services
 @using System.Collections.Specialized
+@using Microsoft.JSInterop;
+@using SmartMeterApp.Utility
 @inject ToastService ToastService;
 @implements IDisposable;
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 @inherits LayoutComponentBase
 <div class="page">
@@ -12,13 +16,11 @@
             @Body
         </article>
 		
-
 		<div style="display: flex; flex-direction: column; position: absolute; top: 0px; right: 0px;">
 			@foreach (ToastObject toast in ToastService.ToastObjects)
 			{	
 				<ToastComponent ToastObject="@toast" 
 					ToastOnClose="@(() => ToastService.RemoveToast(toast))">
-
 				</ToastComponent>
 			}
 		</div>
@@ -27,10 +29,51 @@
 </div>
 
 @code {
-	protected override void OnInitialized()
-	{
-		ToastService.ToastObjects.CollectionChanged += ToastObjects_CollectionChanged;
-	}
+
+    protected override async Task OnInitializedAsync()
+    {
+        ToastService.ToastObjects.CollectionChanged += ToastObjects_CollectionChanged;
+
+        // check if token exists
+        var token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
+
+        if (string.IsNullOrEmpty(token))
+        {
+            // no token stored, redirect to login page
+            Navigation.NavigateTo("/login");
+        }
+        else
+        {
+            // get token data
+            TokenData tokenData = TokenHelper.GetTokenData(token);
+
+            //check expiration date
+            if (tokenData.ExpirationTime < DateTime.UtcNow)
+            {
+                // token expired: remove stored token and redirect to login page
+                await JS.InvokeVoidAsync("localStorage.removeItem", "authToken");
+                Navigation.NavigateTo("/login");
+            }
+            else
+            {
+                // check role
+                if (tokenData.Role == "User")
+                {
+                    Navigation.NavigateTo($"/overview/{tokenData.UserId}");
+                }
+                else if (tokenData.Role == "Operator")
+                {
+                    Navigation.NavigateTo("/users");
+                }
+                else
+                {
+                    // unknown role, redirect to login page
+                    await JS.InvokeVoidAsync("localStorage.removeItem", "authToken");
+                    Navigation.NavigateTo("/login");
+                }
+            }
+        }
+    }
 
 	private void ToastObjects_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 	{

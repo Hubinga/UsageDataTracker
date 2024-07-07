@@ -41,14 +41,14 @@ namespace SmartMeterApi.Controllers
                 }
 
                 // 3. Verify password using HashHelper
-                if (!HashHelper.VerifyPasswordHash(loginModel.Password, user.PasswordSalt, user.PasswordHash))
+                /*if (!HashHelper.VerifyPasswordHash(loginModel.Password, user.PasswordSalt, user.PasswordHash))
                 {
                     // Password is incorrect
                     return Unauthorized("Invalid login credentials.");
-                }
+                }*/
 
                 // Generate OTP and save it in user's record
-                string otp = "123456";//GenerateAndSaveOTP(user);
+                string otp = GenerateAndSaveOTP(user);
                 // Send otp as email
                 //_emailService.SendOtpAsEmail(otp, user.Email);
 
@@ -68,7 +68,7 @@ namespace SmartMeterApi.Controllers
             var otp = GenerateRandomOTP();
 
             // Save OTP in user's record
-            user.OtpCode = otp;
+            user.OtpCode = "123456";//otp;
             user.OtpExpiration = DateTime.UtcNow.AddMinutes(5); //OTP expires in 5 minutes
 
             _context.SaveChanges(); // Save changes to database

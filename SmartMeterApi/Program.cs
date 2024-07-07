@@ -14,7 +14,7 @@ builder.Services.AddControllers();
 
 // Add DbContext
 builder.Services.AddDbContext<SmartMeterContext>(options =>
-	options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -22,52 +22,51 @@ var secretKey = Encoding.ASCII.GetBytes(jwtSettings["SecretKey"]);
 
 builder.Services.AddAuthentication(options =>
 {
-	options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-	options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
 {
-	options.SaveToken = true;
-	options.RequireHttpsMetadata = false; // Set to true in production
-	options.TokenValidationParameters = new TokenValidationParameters
-	{
-		ValidateIssuerSigningKey = true,
-		IssuerSigningKey = new SymmetricSecurityKey(secretKey),
-		ValidateIssuer = false,
-		ValidateAudience = false
-	};
+    options.SaveToken = true;
+    options.RequireHttpsMetadata = false; // Set to true in production
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(secretKey),
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = true, // Ensures the token hasn't expired
+        ClockSkew = TimeSpan.Zero // Optional: Adjust the tolerance for token expiration
+    };
 });
 
 builder.Services.AddAuthorization();
-
 
 // Füge CORS-Dienste hinzu
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
         builder => builder
-            .WithOrigins("https://localhost:7116") // url of allowed applications
+            .WithOrigins("https://localhost:7116") // URL der zugelassenen Anwendungen
             .AllowAnyHeader()
             .AllowAnyMethod());
 });
-
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-	app.UseDeveloperExceptionPage();
+    app.UseDeveloperExceptionPage();
 }
 else
 {
-	app.UseExceptionHandler("/Home/Error");
-	app.UseHsts();
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
 }
 
 // Konfiguriere die CORS-Policy in der Anwendung
 app.UseCors("AllowSpecificOrigin");
-
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
