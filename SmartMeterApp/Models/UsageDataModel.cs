@@ -4,6 +4,8 @@ namespace SmartMeterApp.Models
 {
     public class UsageDataModel
     {
+        [Required]
+        public string UserId { get; set; }
         public int Year { get; set; }
         public string Month { get; set; }
 

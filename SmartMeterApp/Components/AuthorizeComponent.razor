@@ -14,7 +14,7 @@
     {
         <h3>Sign In to Smart Meter Gateway</h3>
 
-        <EditForm Model="@loginModel" OnValidSubmit="LoginDebug">
+        <EditForm Model="@loginModel" OnValidSubmit="HandleValidSubmitLogin">
             <DataAnnotationsValidator />
 
             <div class="form-group login-register-form-group">
@@ -128,6 +128,4 @@
             </div>
         </Content>
     </Modal>
-    
-    <button @onclick="@(() => ToastService.AddToast())">Add Toast</button>
 </div>

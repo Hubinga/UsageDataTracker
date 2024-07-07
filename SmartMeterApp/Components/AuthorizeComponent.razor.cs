@@ -1,6 +1,7 @@
 ﻿using Microsoft.JSInterop;
 using SmartMeterApi.Models;
 using SmartMeterApp.Models;
+using SmartMeterApp.Utility;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -18,12 +19,6 @@ namespace SmartMeterApp.Components
         private bool showRepeatedPasswordError = false;
 
         private bool isVerifying = false;
-
-
-        private void LoginDebug()
-        {
-            Navigation.NavigateTo("/Overview");
-        }
 
         private async Task HandleValidSubmitLogin()
         {
@@ -46,14 +41,17 @@ namespace SmartMeterApp.Components
                         // Handle OTP sent scenario
                         var userEmail = responseObject["email"].ToString();
                         Console.WriteLine($"OTP was sent to {userEmail}");
+                        ToastService.AddToast($"OTP was sent to {userEmail}", ToastType.Info);
 
                         // show otp input modal
-                        await JS.InvokeVoidAsync("showModal", "otpModal");
+                        await JS.InvokeVoidAsync("showModal", "modal");
                     }
                     else
                     {
                         // OTP not sent scenario
-                        Navigation.NavigateTo("/");
+                        Navigation.NavigateTo("/login");
+                        Console.WriteLine($"Error while sending otp. Please login again.");
+                        ToastService.AddToast($"Error while sending otp. Please login again.", ToastType.Error);
                     }
                 }
                 else
@@ -61,11 +59,13 @@ namespace SmartMeterApp.Components
                     // Handle login failure (e.g., show an error message)
                     var errorMessage = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"Login failed: {errorMessage}");
+                    ToastService.AddToast($"Login failed: {errorMessage}", ToastType.Error);
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to login: {ex.Message}");
+                ToastService.AddToast($"Failed to login: {ex.Message}", ToastType.Error);
             }
             finally
             {
@@ -84,19 +84,39 @@ namespace SmartMeterApp.Components
                 if (response.IsSuccessStatusCode)
                 {
                     AuthResponse? result = await response.Content.ReadFromJsonAsync<AuthResponse>();
-                    StoreToken(result.Token);
+                    await StoreToken(result.Token);
+
+                    TokenData tokenData = TokenHelper.GetTokenData(result.Token);
+
                     HideOtpModal();
-                    Navigation.NavigateTo("/");
+                    //check role
+                    if(tokenData.Role == "User")
+                    {
+                        //navigate to usage data page
+                        Navigation.NavigateTo("/overview");
+                    }
+                    else if(tokenData.Role == "Operator")
+                    {
+                        //navigate to user page
+                        Navigation.NavigateTo("/users");
+                    }
+                    else
+                    {
+                        //unknown role
+                        Navigation.NavigateTo("/login");
+                    }
                 }
                 else
                 {
                     string errorMessage = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"OTP verification failed: {errorMessage}");
+                    ToastService.AddToast($"OTP verification failed: {errorMessage}", ToastType.Error);
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to verify otp: {ex.Message}");
+                ToastService.AddToast($"Failed to verify otp: {ex.Message}", ToastType.Error);
             }
             finally
             {
@@ -121,19 +141,22 @@ namespace SmartMeterApp.Components
 
                 if (response.IsSuccessStatusCode)
                 {
-                    // Redirect to the login page after successful registration
                     userAction = UserActions.Login;
+                    ToastService.AddToast($"Registration successfull.", ToastType.Info);
+                    Navigation.NavigateTo("/login");
                 }
                 else
                 {
                     // Handle registration failure (e.g., show an error message)
                     var errorMessage = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"Registration failed: {errorMessage}");
+                    ToastService.AddToast($"Registration failed: {errorMessage}", ToastType.Error);
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Failed to register account: {ex.Message}");
+                ToastService.AddToast($"Failed to register account: {ex.Message}", ToastType.Error);
             }
             finally
             {
@@ -141,12 +164,10 @@ namespace SmartMeterApp.Components
             }
         }
 
-        private void StoreToken(string token)
+        private async Task StoreToken(string token)
         {
-            // Implement token storage logic
-            // For example, using local storage:
-            // await JSRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", token);
-            Console.WriteLine($"Token: {token}");
+            // use local storage
+            await JS.InvokeVoidAsync("localStorage.setItem", "authToken", token);
         }
 
         public class AuthResponse
@@ -168,7 +189,7 @@ namespace SmartMeterApp.Components
 
         private void HideOtpModal()
         {
-            JS.InvokeVoidAsync("hideModal", "otpModal");
+            JS.InvokeVoidAsync("hideModal", "modal");
         }
     }
 }
