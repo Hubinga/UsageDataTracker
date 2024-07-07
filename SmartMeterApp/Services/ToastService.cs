@@ -6,22 +6,25 @@ namespace SmartMeterApp.Services
     public class ToastService
     {
         public ObservableCollection<ToastObject> ToastObjects { get; set; } = new ObservableCollection<ToastObject>();
+		private int secondsToRemoveToast = 5;
 
-        public void AddToast()
+
+        public void AddToast(string message, ToastType toastType)
         {
-            ToastObjects.Add(new ToastObject(true, $"test{ToastObjects.Count}", ToastType.Info));
-        }
+			ToastObject toast = new ToastObject(message, toastType);
+			ToastObjects.Add(toast);
 
-        public void RemoveToast(ToastObject toast)
-        {
-            ToastObjects.Remove(toast);
-        }
+			// Start a timer to remove the toast after 10 seconds
+			Timer timer = new Timer(RemoveToast, toast, secondsToRemoveToast * 1000, Timeout.Infinite);
+		}
 
-        public event Action<string, ToastType> OnShow;
-
-        public void ShowToast(string message, ToastType toastType)
-        {
-            OnShow?.Invoke(message, toastType);
-        }
+		public void RemoveToast(object state)
+		{
+			var toast = state as ToastObject;
+			if (toast != null)
+			{
+				ToastObjects.Remove(toast);
+			}
+		}
     }
 }
