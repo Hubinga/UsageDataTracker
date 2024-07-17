@@ -10,6 +10,9 @@ using SmartMeterApi.Models;
 
 namespace SmartMeterApi.Controllers
 {
+    /// <summary>
+    /// this class provides the endpoints for authentication
+    /// </summary>
 	[Route("api/[controller]")]
 	[ApiController]
 	public class AuthController : ControllerBase
@@ -25,6 +28,11 @@ namespace SmartMeterApi.Controllers
 			_emailService = new EmailService();
 		}
 
+        /// <summary>
+        /// Endpoint to handle user login
+        /// </summary>
+        /// <param name="loginModel"></param>
+        /// <returns></returns>
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel loginModel)
         {
@@ -36,23 +44,22 @@ namespace SmartMeterApi.Controllers
                 // 2. Check if user exists
                 if (user == null)
                 {
-                    // User not found
                     return NotFound("User not found.");
                 }
 
-                // 3. Verify password using HashHelper
-                /*if (!HashHelper.VerifyPasswordHash(loginModel.Password, user.PasswordSalt, user.PasswordHash))
+                // 3. Verify password
+                if (!HashHelper.VerifyPasswordHash(loginModel.Password, user.PasswordSalt, user.PasswordHash))
                 {
-                    // Password is incorrect
                     return Unauthorized("Invalid login credentials.");
-                }*/
+                }
 
-                // Generate OTP and save it in user's record
+                //4. Generate OTP and save it in user's record
                 string otp = GenerateAndSaveOTP(user);
-                // Send otp as email
+
+                // 5. Send otp as email
                 //_emailService.SendOtpAsEmail(otp, user.Email);
 
-                // Return OK response with the OTP information (for frontend to handle)
+                // 6. Return OK response with the OTP information (for frontend to handle)
                 return Ok(new { OTPSent = true, Email = user.Email });
             }
             catch (Exception ex)
@@ -61,7 +68,11 @@ namespace SmartMeterApi.Controllers
             }
         }
 
-        // Method to generate OTP and save it in user's record
+        /// <summary>
+        /// Method to generate OTP and save it in user's record
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns>otp</returns>
         private string GenerateAndSaveOTP(User user)
         {
             // Generate OTP
@@ -69,9 +80,11 @@ namespace SmartMeterApi.Controllers
 
             // Save OTP in user's record
             user.OtpCode = "123456";//otp;
-            user.OtpExpiration = DateTime.UtcNow.AddMinutes(5); //OTP expires in 5 minutes
+            //OTP expires in 5 minutes
+            user.OtpExpiration = DateTime.UtcNow.AddMinutes(5); 
 
-            _context.SaveChanges(); // Save changes to database
+            // Save changes to database
+            _context.SaveChanges(); 
 
             return otp; 
         }
@@ -85,36 +98,38 @@ namespace SmartMeterApi.Controllers
             return otpValue.ToString();
         }
 
+        /// <summary>
+        /// Endpoint to verify otp
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost("verifyotp")]
         public async Task<IActionResult> VerifyOTP([FromBody] VerifyOtpModel model)
         {
             try
             {
-                // Find user by email address
+                // 1. Find user by email address
                 User user = await _context.Users.SingleOrDefaultAsync(u => u.Email == model.Email);
 
                 if (user == null)
                 {
-                    // User not found
                     return NotFound("User not found.");
                 }
 
-                // Check if OTP matches and is not expired
+                // 2. Check if OTP matches and is not expired
                 if (user.OtpCode != model.Otp || user.OtpExpiration < DateTime.UtcNow)
                 {
-                    // Invalid OTP or expired
                     return BadRequest("Invalid OTP or OTP has expired.");
                 }
 
-                // Clear OTP fields after successful verification
+                // 3. Clear OTP fields after successful verification
                 user.OtpCode = "";
                 user.OtpExpiration = null;
+                // 4. Save changes to database
+                _context.SaveChanges(); 
 
-                _context.SaveChanges(); // Save changes to database
-
-                // Generate and return JWT token
+                // 5. Generate and return JWT token
                 var token = GenerateJwtToken(user);
-
                 return Ok(new { Token = token });
             }
             catch (Exception ex)
@@ -123,23 +138,27 @@ namespace SmartMeterApi.Controllers
             }
         }
 
-
+        /// <summary>
+        /// Endpoint to handle user registration
+        /// </summary>
+        /// <param name="registerModel"></param>
+        /// <returns></returns>
         [HttpPost("register")]
 		public async Task<IActionResult> Register([FromBody] RegisterModel registerModel)
 		{
             try
             {
-                // Check if user already exists
+                // 1. Check if user already exists
                 if (await UserExists(registerModel.Email))
                 {
                     return Conflict("User already exists.");
                 }
 
-                // Create password hash and salt
+                // 2. Create password hash and salt
                 byte[] passwordHash, passwordSalt;
                 HashHelper.CreatePasswordHash(registerModel.Password, out passwordHash, out passwordSalt);
 
-                // Create new user object
+                // 3. Create new user object
                 var user = new User
                 {
                     Firstname = registerModel.Firstname,
@@ -152,11 +171,12 @@ namespace SmartMeterApi.Controllers
                     OtpExpiration = null
                 };
 
-                // Add user to database
+                // 4. Add user to database
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
-
-                return StatusCode(201); // Created
+                
+                // Created
+                return StatusCode(201); 
             }
             catch (Exception ex)
             {
@@ -164,32 +184,49 @@ namespace SmartMeterApi.Controllers
             }
         }
 
-		// Check if user with given email already exists
+		/// <summary>
+        /// Check if user with given email already exists
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
 		private async Task<bool> UserExists(string email)
 		{
 			return await _context.Users.AnyAsync(u => u.Email == email);
 		}
 
-		// Generate JWT token for authenticated user
-		private string GenerateJwtToken(User user)
-		{
-			var tokenHandler = new JwtSecurityTokenHandler();
-			var key = Encoding.ASCII.GetBytes(_config["JwtSettings:SecretKey"]);
+        /// <summary>
+        /// Method to generate JWT Token for authenticated user
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns>JWT Token</returns>
+        private string GenerateJwtToken(User user)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            // Secret key for signing the token
+            var key = Encoding.ASCII.GetBytes(_config["JwtSettings:SecretKey"]); 
 
-			var tokenDescriptor = new SecurityTokenDescriptor
-			{
-				Subject = new ClaimsIdentity(new Claim[]
-				{
-				new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // Use Id as NameIdentifier
-                new Claim(ClaimTypes.Email, user.Email),
-				new Claim(ClaimTypes.Role, user.Role) // Assuming role is stored in User object
-				}),
-				Expires = DateTime.UtcNow.AddHours(1), // Token expiration time
-				SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-			};
+            // Token descriptor contains claims (user information), expiry time, and signing credentials
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                { 
+                    // Use Id as NameIdentifier
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    // store user role
+                    new Claim(ClaimTypes.Role, user.Role) 
+                }),
+                // Token expiration time (e.g., 1 hour)
+                Expires = DateTime.UtcNow.AddHours(1), 
+                // Signing credentials with HMAC-SHA256 algorithm
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature) 
+            };
 
-			var token = tokenHandler.CreateToken(tokenDescriptor);
-			return tokenHandler.WriteToken(token);
-		}
-	}	
+            // Create JWT token based on token descriptor
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+
+            // Write token as string
+            return tokenHandler.WriteToken(token);
+        }
+    }	
 }

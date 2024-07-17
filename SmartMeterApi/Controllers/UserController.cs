@@ -6,6 +6,10 @@ using SmartMeterApi.Models;
 
 namespace SmartMeterApi.Controllers
 {
+    /// <summary>
+    /// this class provides the endpoints for getting users
+    /// </summary>
+    //only allow Operators to access endpoints
     [Authorize(Roles = "Operator")]
     [ApiController]
     [Route("api/[controller]")]
@@ -17,7 +21,10 @@ namespace SmartMeterApi.Controllers
         {
             _context = context;
         }
-
+        /// <summary>
+        /// Endpoint to get users, only allowed for operators
+        /// </summary>
+        /// <returns>List of users</returns>
         [HttpGet]
         public async Task<ActionResult<List<UserDataModel>>> GetUsers()
         {
@@ -38,7 +45,6 @@ namespace SmartMeterApi.Controllers
             }
             catch (Exception ex)
             {
-                // Log exception details (ex)
                 return StatusCode(500, "Internal server error");
             }
         }
