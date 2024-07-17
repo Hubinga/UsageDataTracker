@@ -6,7 +6,7 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuration laden
+// load configuration
 builder.Configuration.AddJsonFile("appsettings.json", optional: false);
 
 // Add services to the container.
@@ -42,14 +42,14 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// Füge CORS-Dienste hinzu
+// Add CORS-Services
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
         builder => builder
-            .WithOrigins("https://localhost:7116") // URL der zugelassenen Anwendungen
-            .AllowAnyHeader()
-            .AllowAnyMethod());
+            .WithOrigins("https://localhost:7116") // URL of allowed application
+            .WithHeaders("Content-Type", "Authorization") // only allow "Content-Type" and "Authorization"
+            .WithMethods("GET", "POST", "PUT")); // only allow GET, POST and PUT 
 });
 
 var app = builder.Build();
@@ -65,7 +65,7 @@ else
     app.UseHsts();
 }
 
-// Konfiguriere die CORS-Policy in der Anwendung
+// Configure CORS-Policy
 app.UseCors("AllowSpecificOrigin");
 
 app.UseHttpsRedirection();
