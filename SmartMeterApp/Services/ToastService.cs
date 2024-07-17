@@ -8,7 +8,6 @@ namespace SmartMeterApp.Services
         public ObservableCollection<ToastObject> ToastObjects { get; set; } = new ObservableCollection<ToastObject>();
 		private int secondsToRemoveToast = 5;
 
-
         public void AddToast(string message, ToastType toastType)
         {
 			ToastObject toast = new ToastObject(message, toastType);

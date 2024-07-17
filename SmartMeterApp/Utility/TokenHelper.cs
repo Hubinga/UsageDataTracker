@@ -5,7 +5,12 @@ namespace SmartMeterApp.Utility
 {
     public class TokenHelper
     {
-        public static TokenData GetTokenData(string token)
+        /// <summary>
+        /// Extract values from stored JWT Token
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns>TokenData Object with extracted values</returns>
+        public static TokenData? GetTokenData(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var jsonToken = tokenHandler.ReadJwtToken(token);

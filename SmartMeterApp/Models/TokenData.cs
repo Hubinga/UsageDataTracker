@@ -2,7 +2,7 @@
 {
     public class TokenData
     {
-        public TokenData(int userId, string email, string role, DateTime expirationTime)
+        public TokenData(string userId, string email, string role, DateTime expirationTime)
         {
             UserId = userId;
             Email = email;
@@ -10,7 +10,7 @@
             ExpirationTime = expirationTime;
         }
 
-        public int UserId { get; set; } = -1;
+        public string UserId { get; set; }
         public string Email { get; set; }
         public string Role { get; set; }
         public DateTime ExpirationTime { get; set; }
