@@ -25,7 +25,7 @@ namespace SmartMeterApp.Pages
         {
             try
             {
-                var token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
+                string token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
 
                 if (string.IsNullOrEmpty(token))
                 {
@@ -41,7 +41,7 @@ namespace SmartMeterApp.Pages
                 // get token data
                 TokenData tokenData = TokenHelper.GetTokenData(token);
 
-                if (string.IsNullOrEmpty(tokenData.UserId))
+                if (tokenData == null || string.IsNullOrEmpty(tokenData.UserId))
                 {
                     Console.WriteLine("UserId not found. User may not be authenticated.");
                     return;

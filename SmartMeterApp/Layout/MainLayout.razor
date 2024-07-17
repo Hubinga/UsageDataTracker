@@ -34,44 +34,53 @@
     {
         ToastService.ToastObjects.CollectionChanged += ToastObjects_CollectionChanged;
 
-        // check if token exists
-        var token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
-
-        if (string.IsNullOrEmpty(token))
+        try
         {
-            // no token stored, redirect to login page
-            Navigation.NavigateTo("/login");
-        }
-        else
-        {
-            // get token data
-            TokenData tokenData = TokenHelper.GetTokenData(token);
 
-            //check expiration date
-            if (tokenData.ExpirationTime < DateTime.UtcNow)
+            // check if token exists
+            var token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
+
+            if (string.IsNullOrEmpty(token))
             {
-                // token expired: remove stored token and redirect to login page
-                await JS.InvokeVoidAsync("localStorage.removeItem", "authToken");
+                // no token stored, redirect to login page
                 Navigation.NavigateTo("/login");
             }
             else
             {
-                // check role
-                if (tokenData.Role == "User")
+                // get token data
+                TokenData tokenData = TokenHelper.GetTokenData(token);
+
+                //check expiration date
+                if (tokenData.ExpirationTime < DateTime.UtcNow)
                 {
-                    Navigation.NavigateTo($"/overview/{tokenData.UserId}");
-                }
-                else if (tokenData.Role == "Operator")
-                {
-                    Navigation.NavigateTo("/users");
-                }
-                else
-                {
-                    // unknown role, redirect to login page
+                    // token expired: remove stored token and redirect to login page
                     await JS.InvokeVoidAsync("localStorage.removeItem", "authToken");
                     Navigation.NavigateTo("/login");
                 }
+                else
+                {
+                    // check role
+                    if (tokenData.Role == "User")
+                    {
+                        Navigation.NavigateTo($"/overview/{tokenData.UserId}");
+                    }
+                    else if (tokenData.Role == "Operator")
+                    {
+                        Navigation.NavigateTo("/users");
+                    }
+                    else
+                    {
+                        // unknown role, redirect to login page
+                        await JS.InvokeVoidAsync("localStorage.removeItem", "authToken");
+                        Navigation.NavigateTo("/login");
+                    }
+                }
             }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            ToastService.AddToast(ex.Message, ToastType.Error);
         }
     }
 

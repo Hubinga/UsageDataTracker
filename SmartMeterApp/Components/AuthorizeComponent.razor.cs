@@ -90,12 +90,12 @@ namespace SmartMeterApp.Components
 
                     HideOtpModal();
                     //check role
-                    if(tokenData.Role == "User")
+                    if (tokenData.Role == "User")
                     {
                         //navigate to usage data page
                         Navigation.NavigateTo("/overview");
                     }
-                    else if(tokenData.Role == "Operator")
+                    else if (tokenData.Role == "Operator")
                     {
                         //navigate to user page
                         Navigation.NavigateTo("/users");
