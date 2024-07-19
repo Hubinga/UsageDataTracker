@@ -13,7 +13,7 @@
     @if(userAction == UserActions.Login)
     {
         <h3>Sign In to Smart Meter Gateway</h3>
-
+        <!--Form for user login-->
         <EditForm Model="@loginModel" OnValidSubmit="HandleValidSubmitLogin">
             <DataAnnotationsValidator />
 
@@ -53,7 +53,7 @@
     else
     {
         <h3>Register for Smart Meter Gateway</h3>
-
+        <!--Form for user register-->
         <EditForm Model="@registerModel" OnValidSubmit="HandleValidSubmitRegister">
             <DataAnnotationsValidator />
 
@@ -113,6 +113,7 @@
         </EditForm>
     }
 
+    <!--Modal for user to enter otp-->
     <Modal 
         TModel="VerifyOtpModel"
         SubmitButtonText="Verify OTP"

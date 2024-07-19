@@ -13,6 +13,7 @@
 @code {
     private async Task Logout()
     {
+        // Delete the stored JWT Token from local storage
         await JS.InvokeVoidAsync("localStorage.removeItem", "authToken");
         Navigation.NavigateTo("/login");
     }

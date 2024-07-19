@@ -16,6 +16,7 @@
             @Body
         </article>
 		
+		<!--Display Toast messages-->
 		<div style="display: flex; flex-direction: column; position: absolute; top: 0px; right: 0px;">
 			@foreach (ToastObject toast in ToastService.ToastObjects)
 			{	
@@ -27,70 +28,3 @@
 
     </main>
 </div>
-
-@code {
-
-    protected override async Task OnInitializedAsync()
-    {
-        ToastService.ToastObjects.CollectionChanged += ToastObjects_CollectionChanged;
-
-        try
-        {
-
-            // check if token exists
-            var token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
-
-            if (string.IsNullOrEmpty(token))
-            {
-                // no token stored, redirect to login page
-                Navigation.NavigateTo("/login");
-            }
-            else
-            {
-                // get token data
-                TokenData tokenData = TokenHelper.GetTokenData(token);
-
-                //check expiration date
-                if (tokenData.ExpirationTime < DateTime.UtcNow)
-                {
-                    // token expired: remove stored token and redirect to login page
-                    await JS.InvokeVoidAsync("localStorage.removeItem", "authToken");
-                    Navigation.NavigateTo("/login");
-                }
-                else
-                {
-                    // check role
-                    if (tokenData.Role == "User")
-                    {
-                        Navigation.NavigateTo($"/overview/{tokenData.UserId}");
-                    }
-                    else if (tokenData.Role == "Operator")
-                    {
-                        Navigation.NavigateTo("/users");
-                    }
-                    else
-                    {
-                        // unknown role, redirect to login page
-                        await JS.InvokeVoidAsync("localStorage.removeItem", "authToken");
-                        Navigation.NavigateTo("/login");
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.Message);
-            ToastService.AddToast(ex.Message, ToastType.Error);
-        }
-    }
-
-	private void ToastObjects_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-	{
-		StateHasChanged();
-	}
-
-	public void Dispose()
-	{
-		ToastService.ToastObjects.CollectionChanged -= ToastObjects_CollectionChanged;
-	}
-}

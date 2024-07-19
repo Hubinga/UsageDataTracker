@@ -18,11 +18,13 @@
 @inject ToastService ToastService
 @inject IEventAggregator EventAggregator
 
+<!--Logout Button-->
 <LogoutComponent></LogoutComponent>
 
 <div style="display: flex; justify-content: center; align-items: center; height: 100vh;">
     @if(!string.IsNullOrEmpty(loggedInUserId) && usageData != null)
     {
+        <!--Usage Data Graph-->
         <ChartComponent CurrentUserId="@loggedInUserId"
                         UsageDataOnclick="ShowUsageDataEditModal"
                         UsageData="usageData">
@@ -30,6 +32,7 @@
     }
 </div>
 
+<!--Dialog to enter usage data-->
 <Modal TModel="UsageDataModel"
        SubmitButtonText = "Update"
        Title="@modalText"

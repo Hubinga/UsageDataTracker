@@ -6,10 +6,10 @@ namespace SmartMeterApp.Utility
     public class TokenHelper
     {
         /// <summary>
-        /// Extract values from stored JWT Token
+        /// Extract payload values from stored JWT Token
         /// </summary>
         /// <param name="token"></param>
-        /// <returns>TokenData Object with extracted values</returns>
+        /// <returns>TokenData Object with extracted payload values</returns>
         public static TokenData? GetTokenData(string token)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
@@ -18,9 +18,11 @@ namespace SmartMeterApp.Utility
             string userId = jsonToken.Claims.FirstOrDefault(claim => claim.Type == "nameid")?.Value;
             string email = jsonToken.Claims.FirstOrDefault(claim => claim.Type == "email")?.Value;
             string role = jsonToken.Claims.FirstOrDefault(claim => claim.Type == "role")?.Value;
-            DateTime exp = DateTimeOffset.FromUnixTimeSeconds(1720185542).DateTime;
+            string exp = jsonToken.Claims.FirstOrDefault(claim => claim.Type == "exp")?.Value;
+            ///TODO: use expiration Time from Token
+            DateTime expirationTime = DateTimeOffset.FromUnixTimeSeconds(1720185542).DateTime;
 
-            return new TokenData(userId, email, role, exp);
+            return new TokenData(userId, email, role, expirationTime);
         }
     }
 }

@@ -26,45 +26,40 @@ namespace SmartMeterApp.Components
             {
                 isVerifying = true;
 
-                // Send the login request to the API
+                // 1. Send the login request to the API
                 var response = await HttpClient.PostAsJsonAsync("api/auth/login", loginModel);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    // Check if OTP was sent (assuming the API returns OTPSent property)
+                    // 2. Check if OTP was sent: if yes the API returns otpSent property
                     var responseBody = await response.Content.ReadAsStringAsync();
                     var responseObject = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(responseBody);
 
-
                     if (responseObject.TryGetValue("otpSent", out var otpSentValue) && otpSentValue.ValueKind == JsonValueKind.True)
                     {
-                        // Handle OTP sent scenario
+                        // 3. Handle OTP sent scenario
                         var userEmail = responseObject["email"].ToString();
-                        Console.WriteLine($"OTP was sent to {userEmail}");
                         ToastService.AddToast($"OTP was sent to {userEmail}", ToastType.Info);
 
-                        // show otp input modal
+                        // 4. show otp input modal
                         await JS.InvokeVoidAsync("showModal", "modal");
                     }
                     else
                     {
                         // OTP not sent scenario
                         Navigation.NavigateTo("/login");
-                        Console.WriteLine($"Error while sending otp. Please login again.");
                         ToastService.AddToast($"Error while sending otp. Please login again.", ToastType.Error);
                     }
                 }
                 else
                 {
-                    // Handle login failure (e.g., show an error message)
+                    // Handle login failure
                     var errorMessage = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Login failed: {errorMessage}");
                     ToastService.AddToast($"Login failed: {errorMessage}", ToastType.Error);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to login: {ex.Message}");
                 ToastService.AddToast($"Failed to login: {ex.Message}", ToastType.Error);
             }
             finally
@@ -79,17 +74,32 @@ namespace SmartMeterApp.Components
             {
                 isVerifying = true;
                 verifyOtpModel.Email = loginModel.Email;
+
+                // 1. Send the entered otp to the API for verification
                 HttpResponseMessage response = await HttpClient.PostAsJsonAsync("api/auth/verifyotp", verifyOtpModel);
 
                 if (response.IsSuccessStatusCode)
                 {
+                    // 2. Handle result from API verification process -> store JWT Token
                     AuthResponse? result = await response.Content.ReadFromJsonAsync<AuthResponse>();
+
+                    if (result == null)
+                    {
+                        throw new Exception("OTP verification failed.");
+                    }
+
                     await StoreToken(result.Token);
 
-                    TokenData tokenData = TokenHelper.GetTokenData(result.Token);
+                    // 3. Extract payload data from JWT Token
+                    TokenData? tokenData = TokenHelper.GetTokenData(result.Token);
+
+                    if (tokenData == null)
+                    {
+                        throw new InvalidTokenException("Invalid Token.");
+                    }
 
                     HideOtpModal();
-                    //check role
+                    // 4. check role
                     if (tokenData.Role == "User")
                     {
                         //navigate to usage data page
@@ -102,20 +112,18 @@ namespace SmartMeterApp.Components
                     }
                     else
                     {
-                        //unknown role
+                        //unknown role -> navigate back to login page
                         Navigation.NavigateTo("/login");
                     }
                 }
                 else
                 {
                     string errorMessage = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"OTP verification failed: {errorMessage}");
                     ToastService.AddToast($"OTP verification failed: {errorMessage}", ToastType.Error);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to verify otp: {ex.Message}");
                 ToastService.AddToast($"Failed to verify otp: {ex.Message}", ToastType.Error);
             }
             finally
@@ -128,7 +136,7 @@ namespace SmartMeterApp.Components
         {
             try
             {
-                // Validate the repeated password
+                // 1. Validate the repeated password to prevent user from typo
                 if (registerModel.Password != repeatedPassword)
                 {
                     showRepeatedPasswordError = true;
@@ -136,9 +144,12 @@ namespace SmartMeterApp.Components
                 }
 
                 showRepeatedPasswordError = false;
-                // Send the register request to the API
+
+                // 2. Send the register request to the API
                 var response = await HttpClient.PostAsJsonAsync("api/auth/register", registerModel);
 
+                // 3. Check API response
+                // success: user can now login
                 if (response.IsSuccessStatusCode)
                 {
                     userAction = UserActions.Login;
@@ -147,15 +158,13 @@ namespace SmartMeterApp.Components
                 }
                 else
                 {
-                    // Handle registration failure (e.g., show an error message)
+                    // Handle registration failure
                     var errorMessage = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"Registration failed: {errorMessage}");
                     ToastService.AddToast($"Registration failed: {errorMessage}", ToastType.Error);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to register account: {ex.Message}");
                 ToastService.AddToast($"Failed to register account: {ex.Message}", ToastType.Error);
             }
             finally

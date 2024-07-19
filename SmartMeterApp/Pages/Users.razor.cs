@@ -19,39 +19,43 @@ namespace SmartMeterApp.Pages
         {
             try
             {
-                var token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
+                // 1. Check if JWT Token exists in local storage
+                string token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
 
+                // no token stored, redirect to login page
                 if (string.IsNullOrEmpty(token))
                 {
-                    Console.WriteLine("Token not found. User may not be authenticated.");
                     ToastService.AddToast("Token not found. User may not be authenticated.", ToastType.Error);
                     Navigation.NavigateTo("/login");
                     return;
                 }
 
-                // Use stored token for API authentication
+                // 2. Use stored token for API authentication
                 HttpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-                // Get token data
-                TokenData tokenData = TokenHelper.GetTokenData(token);
+                // 3. Extract payload data from JWT Token
+                TokenData? tokenData = TokenHelper.GetTokenData(token);
 
+                if (tokenData == null)
+                {
+                    throw new InvalidTokenException("Invalid Token.");
+                }
+
+                // Only allowed for role "Operator": redirect to login page
                 if (tokenData.Role != "Operator")
                 {
-                    // Only allowed for role "Operator": redirect to login page
-                    Console.WriteLine("Access denied for non-operators.");
                     ToastService.AddToast("Access denied for non-operators.", ToastType.Error);
                     Navigation.NavigateTo("/login");
                     return;
                 }
 
-                // Send HTTP request
+                // 4. Send HTTP request to get all users
                 userData = await HttpClient.GetFromJsonAsync<List<UserDataModel>>("api/user");
 
                 ToastService.AddToast("User data successfully loaded.", ToastType.Info);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error while loading user data: {ex.Message}");
                 ToastService.AddToast($"Error while loading user data: {ex.Message}", ToastType.Error);
             }
         }

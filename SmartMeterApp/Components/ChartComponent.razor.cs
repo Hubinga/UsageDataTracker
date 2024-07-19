@@ -15,15 +15,18 @@ namespace SmartMeterApp.Components
 
         protected override void OnInitialized()
         {
-            // set initial year to curent year
+            // 1. set initial year to curent year
             currentYear = DateTime.Now.Year;
 
             EventAggregator.ActionRequired += HandleActionRequired;
 
+            // 2. Check if there are any data stored for user
+            // no: show graph with empty values
             if (!UsageData.Any())
             {
                 valuesByYear[currentYear] = Enumerable.Repeat(0, 12).ToList();
             }
+            //yes: show graph with stored values
             else
             {
                 foreach (UsageDataModel data in UsageData)
@@ -60,22 +63,27 @@ namespace SmartMeterApp.Components
             }
         }
 
+        //name of months
         private List<string> months = new List<string>()
-    {
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December"
-    };
+        {
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December"
+        };
 
+        /// <summary>
+        /// This method notifies the component to update the graph data for specific month
+        /// </summary>
+        /// <param name="value"></param>
         void HandleActionRequired(int value)
         {
             if (editMonthIndex != -1)
@@ -91,6 +99,12 @@ namespace SmartMeterApp.Components
             EventAggregator.ActionRequired -= HandleActionRequired;
         }
 
+        /// <summary>
+        /// This method allows the user editing values
+        /// </summary>
+        /// <param name="monthIdx"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
         private async Task UsageDataClicked(int monthIdx, int value)
         {
             editMonthIndex = monthIdx;
