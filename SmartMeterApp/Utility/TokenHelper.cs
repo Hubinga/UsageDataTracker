@@ -18,9 +18,17 @@ namespace SmartMeterApp.Utility
             string userId = jsonToken.Claims.FirstOrDefault(claim => claim.Type == "nameid")?.Value;
             string email = jsonToken.Claims.FirstOrDefault(claim => claim.Type == "email")?.Value;
             string role = jsonToken.Claims.FirstOrDefault(claim => claim.Type == "role")?.Value;
-            string exp = jsonToken.Claims.FirstOrDefault(claim => claim.Type == "exp")?.Value;
-            ///TODO: use expiration Time from Token
-            DateTime expirationTime = DateTimeOffset.FromUnixTimeSeconds(1720185542).DateTime;
+
+            // Get the expiration time from the token
+            string expClaim = jsonToken.Claims.FirstOrDefault(claim => claim.Type == "exp")?.Value;
+
+            // If the expiration claim is present and not null, parse it
+            DateTime expirationTime = DateTime.MinValue;
+            if (long.TryParse(expClaim, out long expUnixTimeSeconds))
+            {
+                // Convert Unix timestamp to DateTime
+                expirationTime = DateTimeOffset.FromUnixTimeSeconds(expUnixTimeSeconds).UtcDateTime;
+            }
 
             return new TokenData(userId, email, role, expirationTime);
         }
