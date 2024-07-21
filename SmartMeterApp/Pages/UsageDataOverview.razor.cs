@@ -4,11 +4,15 @@ using SmartMeterApp.Utility;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Net;
+using Microsoft.AspNetCore.Components;
 
 namespace SmartMeterApp.Pages
 {
     public partial class UsageDataOverview
     {
+        [Parameter]
+        public string UserId { get; set; }
+
         private bool isVerifying = false;
         private UsageDataModel usageDataModel = new();
         private string modalText;
@@ -49,8 +53,16 @@ namespace SmartMeterApp.Pages
 
                 loggedInUserId = tokenData.UserId;
 
-                // 4. Send HTTP request with current user ID
-                usageData = await HttpClient.GetFromJsonAsync<List<UsageDataModel>>($"api/consumption/{loggedInUserId}");
+                // 4. Check if user is an operator or is accessing his own data: Only Operator is allowed to see other users data
+                if (tokenData.Role != "Operator" && UserId != loggedInUserId)
+                {
+                    ToastService.AddToast("Access denied.", ToastType.Error);
+                    Navigation.NavigateTo("/login");
+                    return;
+                }
+
+                // 5. Send HTTP request with user ID
+                usageData = await HttpClient.GetFromJsonAsync<List<UsageDataModel>>($"api/consumption/{UserId}");
 
                 ToastService.AddToast($"Usage data successfully loaded.", ToastType.Info);
             }

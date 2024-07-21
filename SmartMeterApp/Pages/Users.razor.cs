@@ -60,9 +60,9 @@ namespace SmartMeterApp.Pages
             }
         }
 
-        private void LoadUsageDataForUser()
+        private void LoadUsageDataForUser(string userId)
         {
-
+            Navigation.NavigateTo($"/overview/{userId}");
         }
     }
 }
