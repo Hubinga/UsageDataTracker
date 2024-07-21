@@ -8,8 +8,15 @@
     {
         private readonly string _smtpServer = "smtp-mail.outlook.com";
         private readonly int _smtpPort = 587;
-        private readonly string _smtpUsername = "andi.development@outlook.de";
-        private readonly string _smtpPassword = "andidevelopment123!";
+        private readonly string _smtpUsername;
+        private readonly string _smtpPassword;
+
+        public EmailService()
+        {
+            // Get SMTP settings from environment variables
+            _smtpUsername = Environment.GetEnvironmentVariable("SMG_EMAIL_NAME") ?? throw new InvalidOperationException("SMG_EMAIL_NAME environment variable is not set.");
+            _smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? throw new InvalidOperationException("SMTP_PASSWORD environment variable is not set.");
+        }
 
         /// <summary>
         /// Method to send OTP as an email

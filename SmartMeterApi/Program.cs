@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SmartMeterApi.Data;
-using System.Text;
+using SmartMeterApi.Utility;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,8 +17,7 @@ builder.Services.AddDbContext<SmartMeterContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add JWT Authentication
-var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-var secretKey = Encoding.ASCII.GetBytes(jwtSettings["SecretKey"]);
+byte[] secretKey = ConfigurationHelper.GetJwtSecretKey();
 
 builder.Services.AddAuthentication(options =>
 {

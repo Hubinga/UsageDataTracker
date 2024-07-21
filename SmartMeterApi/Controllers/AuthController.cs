@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 using SmartMeterApi.Utility;
 using SmartMeterApi.Data;
 using SmartMeterApi.Models;
@@ -17,13 +16,11 @@ namespace SmartMeterApi.Controllers
 	[ApiController]
 	public class AuthController : ControllerBase
 	{
-		private readonly IConfiguration _config;
 		private readonly SmartMeterContext _context;
-		private EmailService _emailService;
+        private EmailService _emailService;
 
-		public AuthController(IConfiguration config, SmartMeterContext context)
+		public AuthController(SmartMeterContext context)
 		{
-			_config = config;
 			_context = context;
 			_emailService = new EmailService();
 		}
@@ -161,9 +158,10 @@ namespace SmartMeterApi.Controllers
                 // 3. Create new user object
                 var user = new User
                 {
-                    Firstname = registerModel.Firstname,
-                    Lastname = registerModel.Lastname,
-                    Email = registerModel.Email,
+                    // Encrypt sensitive user data
+                    Firstname = EncryptionHelper.Encrypt(registerModel.Firstname),
+                    Lastname = EncryptionHelper.Encrypt(registerModel.Lastname),
+                    Email = EncryptionHelper.Encrypt(registerModel.Email),
                     PasswordHash = passwordHash,
                     PasswordSalt = passwordSalt,
                     Role = "User", // Set the default role for new users
@@ -184,15 +182,16 @@ namespace SmartMeterApi.Controllers
             }
         }
 
-		/// <summary>
+        /// <summary>
         /// Check if user with given email already exists
         /// </summary>
         /// <param name="email"></param>
         /// <returns></returns>
-		private async Task<bool> UserExists(string email)
-		{
-			return await _context.Users.AnyAsync(u => u.Email == email);
-		}
+        private async Task<bool> UserExists(string email)
+        {
+            string encryptedEmail = EncryptionHelper.Encrypt(email);
+            return await _context.Users.AnyAsync(u => u.Email == encryptedEmail);
+        }
 
         /// <summary>
         /// Method to generate JWT Token for authenticated user
@@ -201,12 +200,13 @@ namespace SmartMeterApi.Controllers
         /// <returns>JWT Token</returns>
         private string GenerateJwtToken(User user)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
+            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+
             // Secret key for signing the token
-            var key = Encoding.ASCII.GetBytes(_config["JwtSettings:SecretKey"]); 
+            byte[] key = ConfigurationHelper.GetJwtSecretKey();
 
             // Token descriptor contains claims (user information), expiry time, and signing credentials
-            var tokenDescriptor = new SecurityTokenDescriptor
+            SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 { 
@@ -223,7 +223,7 @@ namespace SmartMeterApi.Controllers
             };
 
             // Create JWT token based on token descriptor
-            var token = tokenHandler.CreateToken(tokenDescriptor);
+            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
 
             // Write token as string
             return tokenHandler.WriteToken(token);
