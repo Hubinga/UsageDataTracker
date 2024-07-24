@@ -16,13 +16,15 @@ namespace SmartMeterApi.Controllers
 	[ApiController]
 	public class AuthController : ControllerBase
 	{
-		private readonly SmartMeterContext _context;
+        private readonly ILogger<AuthController> _logger;
+        private readonly SmartMeterContext _context;
         private EmailService _emailService;
 
-		public AuthController(SmartMeterContext context)
+		public AuthController(SmartMeterContext context, ILogger<AuthController> logger)
 		{
 			_context = context;
 			_emailService = new EmailService();
+            _logger = logger;
 		}
 
         /// <summary>
@@ -35,18 +37,21 @@ namespace SmartMeterApi.Controllers
         {
             try
             {
+                _logger.LogInformation($"Login process started for {loginModel.Email}.");
                 // 1. Find user by email address
                 User user = await _context.Users.SingleOrDefaultAsync(u => u.Email == loginModel.Email);
 
                 // 2. Check if user exists
                 if (user == null)
                 {
+                    _logger.LogInformation("User not found.");
                     return NotFound("User not found.");
                 }
 
                 // 3. Verify password
                 if (!HashHelper.VerifyPasswordHash(loginModel.Password, user.PasswordSalt, user.PasswordHash))
                 {
+                    _logger.LogInformation("Invalid login credentials.");
                     return Unauthorized("Invalid login credentials.");
                 }
 
@@ -57,10 +62,12 @@ namespace SmartMeterApi.Controllers
                 //_emailService.SendOtpAsEmail(otp, user.Email);
 
                 // 6. Return OK response with the OTP information (for frontend to handle)
+                _logger.LogInformation("Login process was successful.");
                 return Ok(new { OTPSent = true, Email = user.Email });
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Login process failed: {ex.Message}.");
                 return BadRequest(ex.Message);
             }
         }
@@ -105,17 +112,20 @@ namespace SmartMeterApi.Controllers
         {
             try
             {
+                _logger.LogInformation($"OTP verification process started for {model.Email}.");
                 // 1. Find user by email address
                 User user = await _context.Users.SingleOrDefaultAsync(u => u.Email == model.Email);
 
                 if (user == null)
                 {
+                    _logger.LogInformation("User not found.");
                     return NotFound("User not found.");
                 }
 
                 // 2. Check if OTP matches and is not expired
                 if (user.OtpCode != model.Otp || user.OtpExpiration < DateTime.UtcNow)
                 {
+                    _logger.LogInformation("Invalid OTP or OTP has expired.");
                     return BadRequest("Invalid OTP or OTP has expired.");
                 }
 
@@ -123,14 +133,16 @@ namespace SmartMeterApi.Controllers
                 user.OtpCode = "";
                 user.OtpExpiration = null;
                 // 4. Save changes to database
-                _context.SaveChanges(); 
+                _context.SaveChanges();
 
                 // 5. Generate and return JWT token
-                var token = GenerateJwtToken(user);
+                string token = GenerateJwtToken(user);
+                _logger.LogInformation("OTP verification process was successful.");
                 return Ok(new { Token = token });
             }
             catch (Exception ex)
             {
+                _logger.LogError($"OTP verification process failed: {ex.Message}.");
                 return BadRequest(ex.Message);
             }
         }
@@ -145,9 +157,12 @@ namespace SmartMeterApi.Controllers
 		{
             try
             {
+                _logger.LogInformation($"Registration process started for {registerModel.Email}.");
+
                 // 1. Check if user already exists
                 if (await UserExists(registerModel.Email))
                 {
+                    _logger.LogInformation("User already exists.");
                     return Conflict("User already exists.");
                 }
 
@@ -172,12 +187,14 @@ namespace SmartMeterApi.Controllers
                 // 4. Add user to database
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
-                
+
                 // Created
+                _logger.LogInformation("Registration process was successful.");
                 return StatusCode(201); 
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Registration process failed: {ex.Message}.");
                 return BadRequest(ex.Message);
             }
         }

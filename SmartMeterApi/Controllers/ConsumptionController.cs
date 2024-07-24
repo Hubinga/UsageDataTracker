@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using SmartMeterApi.Data;
 using SmartMeterApi.Models;
 using System.Security.Claims;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace SmartMeterApi.Controllers
 {
@@ -15,11 +16,13 @@ namespace SmartMeterApi.Controllers
     [Route("api/[controller]")]
     public class ConsumptionController : ControllerBase
 	{
-		private readonly SmartMeterContext _context;
+        private readonly ILogger<ConsumptionController> _logger;
+        private readonly SmartMeterContext _context;
 
-		public ConsumptionController(SmartMeterContext context)
+		public ConsumptionController(SmartMeterContext context, ILogger<ConsumptionController> logger)
 		{
 			_context = context;
+            _logger = logger;
 		}
 
         /// <summary>
@@ -31,6 +34,8 @@ namespace SmartMeterApi.Controllers
         [HttpPost("add")]
         public async Task<IActionResult> AddOrUpdateConsumptionData([FromBody] UsageDataModel data)
         {
+            _logger.LogInformation($"Adding or Updating usage data started for user with id {data.UserId}.");
+
             // 1. extract UserId and Role from JWT Token
             string? currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             string? userRole = User.FindFirstValue(ClaimTypes.Role);
@@ -40,6 +45,7 @@ namespace SmartMeterApi.Controllers
                 // 2. Check role: only Operator is allowed to add or update data for each user
                 if (userRole != "Operator" && currentUserId != data.UserId)
                 {
+                    _logger.LogInformation("User is not allowed to add or update data for another user.");
                     return Forbid("You are not allowed to add or update data for another user.");
                 }
 
@@ -68,10 +74,13 @@ namespace SmartMeterApi.Controllers
 
                 // 4. Save changes
                 await _context.SaveChangesAsync();
+
+                _logger.LogInformation("Adding or Updating usage data was successful");
                 return Ok();
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Adding or Updating usage data failed: {ex.Message}.");
                 return StatusCode(500, "Internal server error");
             }
         }
@@ -85,12 +94,14 @@ namespace SmartMeterApi.Controllers
         [HttpGet("{userId}")]
         public async Task<ActionResult<List<ConsumptionData>>> GetConsumptionData(string userId)
         {
+            _logger.LogInformation($"Getting usage data started for user with id {userId}.");
             // 1. extract UserId from JWT Token
             string? currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             // 2. Check role: only Operator is allowed to get data for each user
             if (currentUserId != userId && !User.IsInRole("Operator"))
             {
+                _logger.LogInformation("User is not allowed to access data for another user.");
                 return Forbid("You are not allowed to access data for another user.");
             }
 
@@ -107,11 +118,13 @@ namespace SmartMeterApi.Controllers
 					Value = d.ConsumptionValue
 				}).ToList();
 
+                _logger.LogInformation("Getting usage data was successful");
                 // 4. return List of usage data
-				return Ok(usageDataModels);
+                return Ok(usageDataModels);
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Getting usage data failed: {ex.Message}.");
                 return StatusCode(500, "Internal server error");
             }
         }

@@ -1,10 +1,25 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using NLog.Web;
+using NLog;
 using SmartMeterApi.Data;
 using SmartMeterApi.Utility;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Create the Smartmetergateway directory if it does not exist
+var appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Smartmetergateway");
+if (!Directory.Exists(appDataPath))
+{
+    Directory.CreateDirectory(appDataPath);
+}
+
+// Configure NLog
+LogManager.Setup().LoadConfigurationFromFile("nlog.config");
+builder.Logging.ClearProviders();
+builder.Logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
+builder.Host.UseNLog();
 
 // load configuration
 builder.Configuration.AddJsonFile("appsettings.json", optional: false);

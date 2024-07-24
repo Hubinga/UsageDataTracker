@@ -15,7 +15,7 @@
         {
             // Get SMTP settings from environment variables
             _smtpUsername = Environment.GetEnvironmentVariable("SMG_EMAIL_NAME") ?? throw new InvalidOperationException("SMG_EMAIL_NAME environment variable is not set.");
-            _smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? throw new InvalidOperationException("SMTP_PASSWORD environment variable is not set.");
+            _smtpPassword = Environment.GetEnvironmentVariable("SMG_EMAIL_PASSWORD") ?? throw new InvalidOperationException("SMG_EMAIL_PASSWORD environment variable is not set.");
         }
 
         /// <summary>
@@ -59,7 +59,7 @@
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to send email: {ex.Message}");
+                throw new Exception($"Failed to send email: {ex.Message}");
             }
         }
     }
