@@ -92,6 +92,7 @@ namespace SmartMeterApp.Pages
 
                 string apiUrl = "api/consumption/add";
                 // 3. Send HTTP request to API to add usage data
+                usageDataModel.UserId = UserId;
                 HttpResponseMessage response = await HttpClient.PostAsJsonAsync(apiUrl, usageDataModel);
 
                 // 4. Check API response

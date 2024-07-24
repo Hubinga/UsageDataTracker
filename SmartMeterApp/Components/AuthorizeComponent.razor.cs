@@ -38,10 +38,11 @@ namespace SmartMeterApp.Components
                     if (responseObject.TryGetValue("otpSent", out var otpSentValue) && otpSentValue.ValueKind == JsonValueKind.True)
                     {
                         // 3. Handle OTP sent scenario
-                        var userEmail = responseObject["email"].ToString();
+                        string userEmail = responseObject["email"].ToString();
                         ToastService.AddToast($"OTP was sent to {userEmail}", ToastType.Info);
 
                         // 4. show otp input modal
+                        verifyOtpModel.Email = userEmail;
                         await JS.InvokeVoidAsync("showModal", "modal");
                     }
                     else
@@ -136,6 +137,7 @@ namespace SmartMeterApp.Components
         {
             try
             {
+                isVerifying = true;
                 // 1. Validate the repeated password to prevent user from typo
                 if (registerModel.Password != repeatedPassword)
                 {
