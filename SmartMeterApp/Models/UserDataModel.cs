@@ -5,7 +5,7 @@ namespace SmartMeterApp.Models
     public class UserDataModel
     {
         [Required]
-        public int Id { get; set; }
+        public string Id { get; set; }
 
         [Required(ErrorMessage = "Firstname is required.")]
         [RegularExpression(@"^[a-zA-Z]+$", ErrorMessage = "Firstname must contain only letters.")]
