@@ -39,7 +39,7 @@ namespace SmartMeterApi.Controllers
             {
                 _logger.LogInformation($"Login process started for {loginModel.Email}.");
                 // 1. Find user by email address
-                User user = await _context.Users.SingleOrDefaultAsync(u => u.Email == loginModel.Email);
+                User? user = await FindUserByEmail(loginModel.Email);
 
                 // 2. Check if user exists
                 if (user == null)
@@ -63,7 +63,7 @@ namespace SmartMeterApi.Controllers
 
                 // 6. Return OK response with the OTP information (for frontend to handle)
                 _logger.LogInformation("Login process was successful.");
-                return Ok(new { OTPSent = true, Email = user.Email });
+                return Ok(new { OTPSent = true, Email = loginModel.Email });
             }
             catch (Exception ex)
             {
@@ -114,7 +114,7 @@ namespace SmartMeterApi.Controllers
             {
                 _logger.LogInformation($"OTP verification process started for {model.Email}.");
                 // 1. Find user by email address
-                User user = await _context.Users.SingleOrDefaultAsync(u => u.Email == model.Email);
+                User? user = await FindUserByEmail(model.Email);
 
                 if (user == null)
                 {
@@ -208,6 +208,16 @@ namespace SmartMeterApi.Controllers
         {
             string encryptedEmail = EncryptionHelper.Encrypt(email);
             return await _context.Users.AnyAsync(u => u.Email == encryptedEmail);
+        }
+
+        /// <summary>
+        /// Find user with given email
+        /// </summary>
+        /// <param name="email"></param>
+        private async Task<User?> FindUserByEmail(string email)
+        {
+            string encryptedEmail = EncryptionHelper.Encrypt(email);
+            return await _context.Users.SingleOrDefaultAsync(u => u.Email == encryptedEmail);
         }
 
         /// <summary>

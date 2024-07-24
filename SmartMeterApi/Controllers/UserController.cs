@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SmartMeterApi.Data;
 using SmartMeterApi.Models;
+using SmartMeterApi.Utility;
 
 namespace SmartMeterApi.Controllers
 {
@@ -38,10 +39,10 @@ namespace SmartMeterApi.Controllers
 
                 List<UserDataModel> userDataModels = users.Select(u => new UserDataModel
                 {
-                    Id = u.Id,
-                    Email = u.Email,
-                    Firstname = u.Firstname,
-                    Lastname = u.Lastname
+                    Id = u.Id.ToString(),
+                    Email = EncryptionHelper.Decrypt(u.Email),
+                    Firstname = EncryptionHelper.Decrypt(u.Firstname),
+                    Lastname = EncryptionHelper.Decrypt(u.Lastname)
                 }).ToList();
 
                 _logger.LogInformation("Getting user data was successful.");
