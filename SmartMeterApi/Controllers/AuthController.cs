@@ -135,7 +135,7 @@ namespace SmartMeterApi.Controllers
 
                 /*Sicherheitsprinzip:
                  - richtige Verwwendung eines one-time-password
-                 - Löschen des Codes aus, um sicherzustellen, dass der Code wirklich nur einmal verwendet werden kann.*/
+                 - Löschen des Codes aus der User Tabelle, um sicherzustellen, dass der Code wirklich nur einmal verwendet werden kann.*/
 
                 // 3. Clear OTP fields after successful verification
                 user.OtpCode = "";
