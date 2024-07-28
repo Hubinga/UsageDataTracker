@@ -69,6 +69,9 @@ namespace SmartMeterApp.Components
             }
         }
 
+        /*Sicherheitsprinzip:
+        - 2FA: Überprüfung des an den Benutzer gesendeten otp
+        - Besserer Schutz, da Angreifer eine weitere Hürde überwinden muss.*/
         private async Task HandleOTPVerification()
         {
             try
@@ -100,6 +103,11 @@ namespace SmartMeterApp.Components
                     }
 
                     HideOtpModal();
+
+                    /*Sicherheitsprinzip:
+                      - Zugriffskontrolle (RBAC): Überprüfen der Benutzerrolle und Weiterleitung basierend auf der Rolle
+                      -> Dies stellt sicher, dass nur berechtigte Benutzer Zugriff auf bestimmte Seiten und Funktionen haben*/
+
                     // 4. check role
                     if (tokenData.Role == "User")
                     {

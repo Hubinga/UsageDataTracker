@@ -44,6 +44,10 @@ namespace SmartMeterApp.Layout
                     // Token is still valid
                     else
                     {
+                        /*Sicherheitsprinzip:
+                            - Zugriffskontrolle (RBAC): Überprüfen der Benutzerrolle und Weiterleitung basierend auf der Rolle
+                            -> Dies stellt sicher, dass nur berechtigte Benutzer Zugriff auf bestimmte Seiten und Funktionen haben*/
+
                         // 5. Check role
                         if (tokenData.Role == "User")
                         {

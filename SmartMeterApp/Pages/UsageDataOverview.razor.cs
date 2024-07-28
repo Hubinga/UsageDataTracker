@@ -53,6 +53,10 @@ namespace SmartMeterApp.Pages
 
                 loggedInUserId = tokenData.UserId;
 
+                /*Sicherheitsprinzipien:
+                    - Zugriffskontrolle (RBAC): Überprüfen der Benutzerrolle und Weiterleitung basierend auf der Rolle
+                    -> Dies stellt sicher, dass nur berechtigte Benutzer Zugriff auf bestimmte Seiten und Funktionen haben*/
+
                 // 4. Check if user is an operator or is accessing his own data: Only Operator is allowed to see other users data
                 if (tokenData.Role != "Operator" && UserId != loggedInUserId)
                 {

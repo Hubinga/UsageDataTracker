@@ -41,6 +41,10 @@ namespace SmartMeterApp.Pages
                     throw new InvalidTokenException("Invalid Token.");
                 }
 
+                /*Sicherheitsprinzipien:
+                    - Zugriffskontrolle (RBAC): Überprüfen der Benutzerrolle und Weiterleitung basierend auf der Rolle
+                    -> Dies stellt sicher, dass nur berechtigte Benutzer Zugriff auf bestimmte Seiten und Funktionen haben*/
+
                 // Only allowed for role "Operator": redirect to login page
                 if (tokenData.Role != "Operator")
                 {

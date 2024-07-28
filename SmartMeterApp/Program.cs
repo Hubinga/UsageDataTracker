@@ -8,6 +8,10 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
+/*Sicherheitsprinzipien: 
+ - Verwendung von HTTPS stellt sicher, dass die Kommunikation verschlüsselt ist und vor Abhören und Manipulation geschützt wird.
+ - HTTPS verschlüsselt die Daten während der Übertragung, wodurch sie vor Abhören und Manipulation durch Dritte (z.B. Man-in-the-Middle-Angriffe) geschützt sind.*/
+
 // Configure HttpClient to send requests to the API
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://localhost:7114/") });
 
