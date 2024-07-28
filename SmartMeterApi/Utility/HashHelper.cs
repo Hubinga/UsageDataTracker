@@ -5,13 +5,19 @@ namespace SmartMeterApi.Utility
 {
 	public static class HashHelper
 	{
-		/// <summary>
-		/// Creates a password hash using HMACSHA512 with a random salt.
-		/// </summary>
-		/// <param name="password">The password to hash.</param>
-		/// <param name="passwordHash">Output parameter for the generated password hash.</param>
-		/// <param name="passwordSalt">Output parameter for the generated password salt.</param>
-		public static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+        /*Sicherheitsprinzip:
+          -	sicheres speichern der Passwörter
+          - Passwörter werden nicht im Klartext gespeichert, sondern als Hash-Wert. 
+		  - Der Salt ist ein zufällig generierter Wert, der dem Passwort hinzugefügt wird, bevor der Hash berechnet wird.
+		  - Selbst wenn zwei Benutzer dasselbe Passwort wählen, führen unterschiedliche Salt-Werte zu unterschiedlichen Hashes. Dies erschwert es Angreifern, Rainbow-Table-Angriffe oder andere Vorverrechnungsangriffe durchzuführen.*/
+
+        /// <summary>
+        /// Creates a password hash using HMACSHA512 with a random salt.
+        /// </summary>
+        /// <param name="password">The password to hash.</param>
+        /// <param name="passwordHash">Output parameter for the generated password hash.</param>
+        /// <param name="passwordSalt">Output parameter for the generated password salt.</param>
+        public static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
 		{
 			using (var hmac = new HMACSHA512())
 			{

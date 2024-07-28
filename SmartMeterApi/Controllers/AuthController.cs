@@ -55,11 +55,15 @@ namespace SmartMeterApi.Controllers
                     return Unauthorized("Invalid login credentials.");
                 }
 
+                /*Sicherheitsprinzip:
+                 - 2FA: Senden eines otp an die Email des Nutzers
+                 - Besserer Schutz, da Angreifer eine weitere Hürde überwinden muss.*/
+
                 //4. Generate OTP and save it in user's record
                 string otp = GenerateAndSaveOTP(user);
 
                 // 5. Send otp as email
-                //_emailService.SendOtpAsEmail(otp, user.Email);
+                _emailService.SendOtpAsEmail(otp, user.Email);
 
                 // 6. Return OK response with the OTP information (for frontend to handle)
                 _logger.LogInformation("Login process was successful.");
@@ -83,7 +87,7 @@ namespace SmartMeterApi.Controllers
             var otp = GenerateRandomOTP();
 
             // Save OTP in user's record
-            user.OtpCode = "123456";//otp;
+            user.OtpCode = otp;
             //OTP expires in 5 minutes
             user.OtpExpiration = DateTime.UtcNow.AddMinutes(5); 
 
@@ -128,6 +132,10 @@ namespace SmartMeterApi.Controllers
                     _logger.LogInformation("Invalid OTP or OTP has expired.");
                     return BadRequest("Invalid OTP or OTP has expired.");
                 }
+
+                /*Sicherheitsprinzip:
+                 - richtige Verwwendung eines one-time-password
+                 - Löschen des Codes aus, um sicherzustellen, dass der Code wirklich nur einmal verwendet werden kann.*/
 
                 // 3. Clear OTP fields after successful verification
                 user.OtpCode = "";
@@ -220,6 +228,12 @@ namespace SmartMeterApi.Controllers
             return await _context.Users.SingleOrDefaultAsync(u => u.Email == encryptedEmail);
         }
 
+
+        /*Sicherheitsprinzip:
+           - sichere und effiziente Authentifizierung und Autorisierung von Benutzern innerhalb der API
+           - die Rolle des Benutzers im JWT festgelegt ist und zusätzliche Berechtigungen durch manuelle Zuweisung vergeben werden können
+         */
+
         /// <summary>
         /// Method to generate JWT Token for authenticated user
         /// </summary>
@@ -229,6 +243,9 @@ namespace SmartMeterApi.Controllers
         {
             JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
 
+            /* Sicherheitsprinzip:
+             - Verwendung eines geheimen Schlüssels zum Signieren des Tokens
+             - Stellt sicher, dass das Token nicht manipuliert werden kann*/
             // Secret key for signing the token
             byte[] key = ConfigurationHelper.GetJwtSecretKey();
 

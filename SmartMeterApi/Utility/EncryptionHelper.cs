@@ -13,6 +13,10 @@ namespace SmartMeterApi.Utility
             public byte[] IV { get; set; }
         }
 
+        /*Sicherheitsprinzip:
+          - Vermeidung der festen Codierung von Schlüsseln und Anmeldedaten
+         */
+
         /// <summary>
         /// Retrieves AES secrets (key and IV) from environment variables.
         /// </summary>
@@ -32,6 +36,10 @@ namespace SmartMeterApi.Utility
                 IV = Convert.FromHexString(iv)
             };
         }
+
+        /*Sicherheitsprinzip:
+         - Verschlüsselung der Benutzerdaten
+         */
 
         /// <summary>
         /// Encrypts the given plaintext using AES-256 encryption.

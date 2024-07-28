@@ -15,6 +15,10 @@ if (!Directory.Exists(appDataPath))
     Directory.CreateDirectory(appDataPath);
 }
 
+/*Sicherheitsprinzip:
+  - Aufzeichnung von Ereignissen in der API
+*/
+
 // Configure NLog
 LogManager.Setup().LoadConfigurationFromFile("nlog.config");
 builder.Logging.ClearProviders();
@@ -30,6 +34,11 @@ builder.Services.AddControllers();
 // Add DbContext
 builder.Services.AddDbContext<SmartMeterContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+/*Sicherheitsprinzip:
+  - Sichere Authentifizierung und Autorisierung
+  - Dadurch wird sichergestellt, dass nur gültige, nicht abgelaufene JWTs für die Authentifizierung verwendet werden
+  - Der Server überprüft bei jeder Anfrage den JWT, um sicherzustellen, dass es gültig und unverändert ist*/
 
 // Add JWT Authentication
 byte[] secretKey = ConfigurationHelper.GetJwtSecretKey();
@@ -55,6 +64,12 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+
+/*Sicherheitsprinzip:
+  - Zugriffskontrolle für die API mittels CORS
+  - Schutz vor CSRF-Angriffen
+  - erlaubt nur verifizierten Anwendungen die Kommunikation
+ */
 
 // Add CORS-Services
 builder.Services.AddCors(options =>

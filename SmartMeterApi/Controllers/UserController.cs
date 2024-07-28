@@ -7,6 +7,10 @@ using SmartMeterApi.Utility;
 
 namespace SmartMeterApi.Controllers
 {
+    /*Sicherheitsprinzipien:
+      - Zugriffskontrolle (RBAC): Überprüfen der Benutzerrolle und Weiterleitung basierend auf der Rolle
+      -> Dies stellt sicher, dass nur berechtigte Benutzer Zugriff auf bestimmte Seiten und Funktionen haben
+      - nur Operator darf diese Endpoints verwenden*/
     /// <summary>
     /// this class provides the endpoints for getting users
     /// </summary>

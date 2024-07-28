@@ -11,6 +11,9 @@
         private readonly string _smtpUsername;
         private readonly string _smtpPassword;
 
+        /*Sicherheitsprinzip:
+          - Vermeidung der festen Codierung von Schlüsseln und Anmeldedaten
+         */
         public EmailService()
         {
             // Get SMTP settings from environment variables
@@ -31,7 +34,7 @@
                 // Set the sender's name and address
                 message.From.Add(new MailboxAddress("Smart Meter Gateway API", _smtpUsername));
                 // Set the recipient's email address
-                message.To.Add(new MailboxAddress("", userEmail));
+                message.To.Add(new MailboxAddress("", EncryptionHelper.Decrypt(userEmail)));
                 // Set the email subject
                 message.Subject = "Your OTP Code for Login";
 
@@ -44,7 +47,7 @@
                 // Create a new SMTP client
                 using (var client = new MailKit.Net.Smtp.SmtpClient())
                 {
-                    // TODO: Only for testing environment, not for production! Bypassing certificate validation
+                    //Only for testing environment, not for production! Bypassing certificate validation -> // remove in production
                     client.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
                     // Connect to the Outlook.com SMTP server and port with StartTLS

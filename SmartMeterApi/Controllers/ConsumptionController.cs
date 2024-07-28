@@ -42,6 +42,9 @@ namespace SmartMeterApi.Controllers
 
             try
             {
+                /*Sicherheitsprinzip:
+                  - Zugriffskontrolle (RBAC): Überprüfen der Benutzerrolle und Weiterleitung basierend auf der Rolle
+                  -> Dies stellt sicher, dass nur berechtigte Benutzer Zugriff auf bestimmte Seiten und Funktionen haben*/
                 // 2. Check role: only Operator is allowed to add or update data for each user
                 if (userRole != "Operator" && currentUserId != data.UserId)
                 {
@@ -98,6 +101,9 @@ namespace SmartMeterApi.Controllers
             // 1. extract UserId from JWT Token
             string? currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+            /*Sicherheitsprinzipien:
+              - Zugriffskontrolle (RBAC): Überprüfen der Benutzerrolle und Weiterleitung basierend auf der Rolle
+              -> Dies stellt sicher, dass nur berechtigte Benutzer Zugriff auf bestimmte Seiten und Funktionen haben*/
             // 2. Check role: only Operator is allowed to get data for each user
             if (currentUserId != userId && !User.IsInRole("Operator"))
             {

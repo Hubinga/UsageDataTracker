@@ -2,10 +2,13 @@
 
 namespace SmartMeterApi.Models
 {
-	/// <summary>
-	/// Represents user data.
-	/// </summary>
-	public class User
+    /*Sicherheitsprinzipien: 
+     - Eingabevalidierung: Alle Benutzereingaben werden überprüft, um sicherzustellen, dass sie den erwarteten Formaten entsprechen und keine schädlichen Daten enthalten.
+     - Verhinderung von Injection-Angriffen: Durch die Verwendung von regulären Ausdrücken wird sichergestellt, dass nur erlaubte Zeichen akzeptiert werden.*/
+    /// <summary>
+    /// Represents user data.
+    /// </summary>
+    public class User
 	{
         [Key]
         public int Id { get; set; }

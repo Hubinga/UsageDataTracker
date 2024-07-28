@@ -5,6 +5,9 @@
     /// </summary>
     public static class ConfigurationHelper
     {
+        /*Sicherheitsprinzip:
+          - Vermeidung der festen Codierung von Schlüsseln und Anmeldedaten
+         */
         /// <summary>
         /// Retrieves the JWT secret key.
         /// </summary>
